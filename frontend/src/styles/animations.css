@@ -1,0 +1,158 @@
+/* ═════════════════════════════════════════════════════════════
+   MORNING BREW COLLECTIVE - ANIMATION UTILITIES
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═════════════════════════════════════════════════════════════
+   SCROLL-TRIGGERED FADE-IN
+   ═════════════════════════════════════════════════════════════ */
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in.from-left {
+  transform: translateX(-30px);
+}
+
+.fade-in.from-right {
+  transform: translateX(30px);
+}
+
+.fade-in.from-left.visible,
+.fade-in.from-right.visible {
+  transform: translateX(0);
+}
+
+.fade-in.scale-in {
+  transform: scale(0.9);
+}
+
+.fade-in.scale-in.visible {
+  transform: scale(1);
+}
+
+/* Staggered delays */
+.fade-in-delay-1 {
+  transition-delay: 100ms;
+}
+.fade-in-delay-2 {
+  transition-delay: 200ms;
+}
+.fade-in-delay-3 {
+  transition-delay: 300ms;
+}
+.fade-in-delay-4 {
+  transition-delay: 400ms;
+}
+.fade-in-delay-5 {
+  transition-delay: 500ms;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   STAGGERED CHILDREN UTILITIES
+   ═════════════════════════════════════════════════════════════ */
+
+.stagger-children > *:nth-child(1) {
+  transition-delay: 0ms;
+}
+.stagger-children > *:nth-child(2) {
+  transition-delay: 100ms;
+}
+.stagger-children > *:nth-child(3) {
+  transition-delay: 200ms;
+}
+.stagger-children > *:nth-child(4) {
+  transition-delay: 300ms;
+}
+.stagger-children > *:nth-child(5) {
+  transition-delay: 400ms;
+}
+.stagger-children > *:nth-child(6) {
+  transition-delay: 500ms;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ANIMATION DURATION MODIFIERS
+   ═══════════════════════════════════════════════════════════ */
+
+.fade-in-fast {
+  transition-duration: 0.15s;
+}
+.fade-in-normal {
+  transition-duration: 0.3s;
+}
+.fade-in-slow {
+  transition-duration: 0.5s;
+}
+.fade-in-slower {
+  transition-duration: 1s;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   EASING MODIFIERS
+   ═══════════════════════════════════════════════════════════ */
+
+.fade-in-smooth {
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+.fade-in-bounce {
+  transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.fade-in-ease-in {
+  transition-timing-function: cubic-bezier(0.42, 0, 1, 1);
+}
+.fade-in-ease-out {
+  transition-timing-function: cubic-bezier(0, 0, 0.58, 1);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   REDUCED MOTION OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .fade-in.from-left,
+  .fade-in.from-right,
+  .fade-in.scale-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .stagger-children > *:nth-child(n) {
+    transition-delay: 0ms;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ANIMATION UTILITY CLASSES
+   ═════════════════════════════════════════════════════════════ */
+
+/* Disable animations */
+.no-animation {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Preserve 3D transforms */
+.preserve-3d {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+/* Hardware acceleration */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ANIMATIONS END
+   ═════════════════════════════════════════════════════════════ */

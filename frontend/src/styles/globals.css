@@ -1,0 +1,275 @@
+/* ═══════════════════════════════════════════════════════════════
+   MORNING BREW COLLECTIVE - GLOBAL STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Import design tokens */
+@import './tokens.css';
+
+/* ═════════════════════════════════════════════════════════════
+   CSS LAYERS
+   ═════════════════════════════════════════════════════════════ */
+@layer base {
+  /* Reset styles */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* HTML & Base */
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Body */
+  body {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: rgb(61 43 31);
+    background-color: rgb(255 248 231);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Grain Texture Overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: var(--texture-grain);
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 10000;
+  }
+
+  /* Media & Images */
+  img, svg, picture {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Links */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Buttons */
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+
+  /* Lists */
+  ul, ol {
+    list-style: none;
+  }
+
+  /* Focus States */
+  :focus-visible {
+    outline: 3px solid rgb(255 123 84);
+    outline-offset: 3px;
+  }
+
+  /* Skip Link */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: var(--spacing-4);
+    background: rgb(61 43 31);
+    color: rgb(255 248 231);
+    padding: var(--spacing-3) var(--spacing-6);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    z-index: 4000;
+    transition: top var(--duration-normal) var(--ease-smooth);
+  }
+
+  .skip-link:focus {
+    top: var(--spacing-4);
+  }
+
+  /* Typography Base */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.2;
+    color: rgb(61 43 31);
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+
+  h3 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  h4 {
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+  }
+
+  p {
+    margin-bottom: var(--spacing-4);
+  }
+
+  /* Print Styles */
+  @media print {
+    body {
+      background: white;
+      color: black;
+    }
+
+    * {
+      background: transparent !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+
+    .skip-link,
+    nav,
+    .header,
+    .footer,
+    .texture-grain,
+    .pattern-sunburst,
+    .pattern-wave,
+    .pattern-circles,
+    .pattern-arcs {
+      display: none !important;
+    }
+
+    a[href^="http"]:after {
+      content: " (" attr(href) ")";
+      font-size: 0.8em;
+      color: #666;
+    }
+
+    img {
+      max-width: 100% !important;
+      page-break-inside: avoid;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITY EXTENSIONS
+   ═══════════════════════════════════════════════════════════════ */
+@layer utilities {
+  /* Retro Shadow */
+  .shadow-retro {
+    box-shadow: var(--shadow-button);
+  }
+
+  /* Glow Effect */
+  .glow-effect {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Grain Texture */
+  .grain-texture {
+    background-image: var(--texture-grain);
+    background-blend-mode: overlay;
+  }
+
+  /* Fade-in trigger class */
+  .visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Fade-in initial state */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Respect reduced motion for fade-in */
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in {
+      opacity: 1;
+      transform: translateY(0);
+      transition: none;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS LAYER
+   ═══════════════════════════════════════════════════════════════ */
+@layer animations {
+  .animate-slow-rotate {
+    animation: var(--animation-slow-rotate);
+  }
+
+  .animate-gentle-float {
+    animation: var(--animation-gentle-float);
+  }
+
+  .animate-steam-rise {
+    animation: var(--animation-steam-rise);
+  }
+
+  .animate-bean-bounce {
+    animation: var(--animation-bean-bounce);
+  }
+
+  .animate-marker-pulse {
+    animation: var(--animation-marker-pulse);
+  }
+
+  .animate-fade-in {
+    animation: var(--animation-fade-in);
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-slow-rotate,
+    .animate-gentle-float,
+    .animate-steam-rise,
+    .animate-bean-bounce,
+    .animate-marker-pulse,
+    .animate-fade-in {
+      animation: none;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENTS LAYER (Reserved for component styles)
+   ═══════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Reserved for retro component styles */
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL END
+   ═══════════════════════════════════════════════════════════════ */
