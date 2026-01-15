@@ -1,0 +1,52 @@
+# Environment
+.env
+.env.local
+.env.*.local
+!env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+.next/
+dist/
+build/
+public/build/
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pids
+.nyc_output/
+playwright-report/
+playwright/.cache/
+
+# Testing
+coverage/
+*.lcov
+
+# Backup
+backup/
+*.bak
+*.backup
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Docker
+.docker-data/

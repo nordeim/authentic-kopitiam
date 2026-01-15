@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: npm ci
+      - name: Run Tests
+        working-directory: ./frontend
+        run: npm test
+      - name: Type Check
+        working-directory: ./frontend
+        run: npm run typecheck
+      - name: Lint
+        working-directory: ./frontend
+        run: npm run lint
+
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: morning_brew_test
+          POSTGRES_USER: brew_user
+          POSTGRES_PASSWORD: secret
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pgsql
+          coverage: xdebug
+      - name: Install Composer Dependencies
+        working-directory: ./backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Run Tests
+        working-directory: ./backend
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: morning_brew_test
+          DB_USERNAME: brew_user
+          DB_PASSWORD: secret
+          REDIS_HOST: localhost
+        run: php artisan test
+      - name: Pint (Linter)
+        working-directory: ./backend
+        run: ./vendor/bin/pint --test

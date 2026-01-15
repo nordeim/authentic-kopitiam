@@ -1,0 +1,100 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type "PRODUCTION" to confirm deployment'
+        required: true
+
+jobs:
+  validate:
+    name: Validate Pre-Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+    steps:
+      - name: Check Confirmation
+        id: check
+        run: |
+          if [ "${{ github.event.inputs.confirmation }}" != "PRODUCTION" ]; then
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "::error::Deployment confirmation required. Please re-run workflow with confirmation 'PRODUCTION'"
+            exit 1
+          else
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+
+      - name: Run Tests
+        run: |
+          echo "Running pre-deployment tests..."
+          cd frontend && npm test
+          cd backend && php artisan test --parallel
+
+  deploy:
+    name: Deploy to Production
+    needs: validate
+    if: needs.validate.outputs.should-deploy == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_SSH_KEY }}" > ~/.ssh/prod_key
+          chmod 600 ~/.ssh/prod_key
+          echo "Host production.example.com" > ~/.ssh/config
+          echo "  IdentityFile ~/.ssh/prod_key" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+
+      - name: Database Backup
+        env:
+          PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
+        run: |
+          ssh -i ~/.ssh/prod_key ${PROD_DB_HOST} "pg_dump morning_brew_prod > /backup/morning-brew-$(date +%Y%m%d).sql"
+
+      - name: Deploy Frontend
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+        run: |
+          echo "Deploying frontend to production..."
+          cd frontend && npm ci
+          npm run build
+          rsync -avz -e "ssh -i ~/.ssh/prod_key" --delete ./build/ ${PROD_USER}@${PROD_HOST}:/var/www/frontend/
+
+      - name: Deploy Backend
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+        run: |
+          echo "Deploying backend to production..."
+          cd backend && composer install --no-dev --optimize-autoloader
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          php artisan queue:restart
+          rsync -avz -e "ssh -i ~/.ssh/prod_key" --exclude-from='deploy-exclude.txt' ./ ${PROD_USER}@${PROD_HOST}:/var/www/backend/
+
+      - name: Post-Deploy Health Check
+        run: |
+          sleep 10
+          curl -f https://morningbrew.example.com/api/health || exit 1
+          echo "Deployment health check passed"
+
+      - name: Rollback on Failure
+        if: failure()
+        run: |
+          echo "Deployment failed, triggering rollback..."
+          # Rollback logic here
+          exit 1
+
+      - name: Notify Team
+        if: success()
+        run: |
+          echo "::notice::Production deployment successful"
