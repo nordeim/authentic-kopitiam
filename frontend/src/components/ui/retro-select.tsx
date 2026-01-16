@@ -14,8 +14,7 @@ const RetroSelectTrigger = forwardRef<
   <Select.Trigger
     ref={ref}
     className={cn(
-      'flex h-12 w-full items-center justify-between whitespace-nowrap rounded-md border-2 border-terracotta-warm bg-cream-white px-4 py-2 text-base font-body text-left shadow-sm focus-visible outline-none disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-fast ease-smooth',
-      className
+      'flex h-12 w-full items-center justify-between whitespace-nowrap rounded-md border-2 border-terracotta-warm bg-cream-white px-4 py-2 text-base font-body text-left shadow-sm focus-visible outline-none disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-fast ease-smooth'
     )}
     {...props}
   >
@@ -33,15 +32,14 @@ const RetroSelectContent = forwardRef<
   React.ComponentPropsWithoutRef<typeof Select.Content>
 >(({ className, children, position = 'popper', ...props }, ref) => (
   <Select.Portal>
-    <Select.Content
-      ref={ref}
-      position={position}
-      className={cn(
-        'relative z-50 min-w-[8rem] overflow-hidden rounded-md border-2 border-terracotta-warm bg-cream-white shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out',
-        className
-      )}
-      {...props}
-    >
+  <Select.Content
+       ref={ref}
+       position={position}
+       className={cn(
+         'relative z-50 min-w-[8rem] overflow-hidden rounded-md border-2 border-terracotta-warm bg-cream-white shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out'
+       )}
+       {...props}
+     >
       <Select.ScrollUpButton className="flex h-6 w-full cursor-default items-center justify-center bg-honey-light/20 hover:bg-honey-light/40 text-espresso-dark">
         <ChevronUpIcon className="h-4 w-4" />
       </Select.ScrollUpButton>
@@ -64,8 +62,7 @@ const RetroSelectLabel = forwardRef<
   <Select.Label
     ref={ref}
     className={cn(
-      'px-4 py-2 text-sm font-display font-bold text-espresso-dark',
-      className
+      'px-4 py-2 text-sm font-display font-bold text-espresso-dark'
     )}
     {...props}
   />
@@ -80,8 +77,7 @@ const RetroSelectItem = forwardRef<
   <Select.Item
     ref={ref}
     className={cn(
-      'relative flex w-full select-none items-center rounded-sm px-4 py-2 text-sm font-body outline-none transition-colors duration-fast ease-smooth focus:bg-honey-light focus:text-terracotta-warm data-[disabled]:pointer-events-none data-[disabled]:opacity-50 cursor-pointer',
-      className
+      'relative flex w-full select-none items-center rounded-sm px-4 py-2 text-sm font-body outline-none transition-colors duration-fast ease-smooth focus:bg-honey-light focus:text-terracotta-warm data-[disabled]:pointer-events-none data-[disabled]:opacity-50 cursor-pointer'
     )}
     {...props}
   >

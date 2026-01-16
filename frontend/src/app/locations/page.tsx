@@ -1,7 +1,7 @@
 'use client';
 
 import { RetroButton } from '@/components/ui/retro-button';
-import { AnimatedSection } from '@/components/animations/animated-section';
+import { AnimatedSection } from '@/hooks/use-in-view';
 import { MapMarker } from '@/components/animations/map-marker';
 
 interface Location {

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Fraunces, DM_Sans } from '@/lib/fonts';
-import './globals.css';
+import './styles/globals.css';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 
 export const metadata: Metadata = {
   title: 'Morning Brew Collective - Where Singapore\'s Morning Ritual Begins',
@@ -25,9 +27,11 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
+        <Header />
         <main id="main-content">
           {children}
         </main>
+        <Footer />
       </body>
     </html>
   );

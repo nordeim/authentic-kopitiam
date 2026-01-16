@@ -1,6 +1,6 @@
 import { PolaroidGallery, type PolaroidPhoto } from '@/components/animations/polaroid-gallery';
 import { RetroButton } from '@/components/ui/retro-button';
-import { AnimatedSection } from '@/components/animations/animated-section';
+import { AnimatedSection } from '@/hooks/use-in-view';
 
 const POLAROID_PHOTOS: PolaroidPhoto[] = [
   {

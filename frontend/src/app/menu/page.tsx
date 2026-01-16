@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { RetroButton } from '@/components/ui/retro-button';
-import { AnimatedSection } from '@/components/animations/animated-section';
+import { AnimatedSection } from '@/hooks/use-in-view';
 import { BeanBounce } from '@/components/animations/bean-bounce';
 import { WaveDivider } from '@/components/ui/wave-divider';
 

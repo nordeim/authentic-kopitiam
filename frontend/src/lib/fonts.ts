@@ -14,3 +14,11 @@ export const DM_Sans = DMSans({
   variable: '--font-body',
   display: 'swap',
 });
+
+export const DM_Sans = DMSans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-body',
+  display: 'swap',
+});

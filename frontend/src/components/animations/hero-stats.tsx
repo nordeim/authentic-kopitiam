@@ -1,7 +1,6 @@
 'use client';
 
-import { useInView } from '@/components/ui/use-in-view';
-import { type ReactNode } from 'react';
+import { useInView } from '@/hooks/use-in-view';
 
 interface HeroStatsProps {
   number: string | number;

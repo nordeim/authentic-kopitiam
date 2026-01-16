@@ -2,7 +2,7 @@ import { SunburstBackground } from '@/components/animations/sunburst-background'
 import { FloatingCoffeeCup } from '@/components/animations/floating-coffee-cup';
 import { HeroStats } from '@/components/animations/hero-stats';
 import { WaveDivider } from '@/components/ui/wave-divider';
-import { AnimatedSection } from '@/components/animations/animated-section';
+import { AnimatedSection } from '@/hooks/use-in-view';
 import { RetroButton } from '@/components/ui/retro-button';
 
 export default function HeroPage() {

@@ -1,3 +1,5 @@
+'use client';
+
 interface SunburstBackgroundProps {
   color1?: string;
   color2?: string;
