@@ -14,7 +14,7 @@ Awesome job on your meticulous analysis, planning and execution. Please keep up 
 
 ---
 
-Awesome job on your meticulous review, analysis and planning. Please keep up the good work. Now, please meticulously review the codebase files to align your understanding of the current state of the project and the actual implemention. Then meticulously create a briefing document for an AI coding agent to be able to continue from the present state. After conducting your meticulous codebase review to align your understanding of the codebase, you will create a comprehensive *single-source-of-truth* briefing document for any coding agent or human developer to have the same deep understanding of the project and the current codebase status. Save the agent *briefing document* that captures your aligned and validated understanding as a markdown file `AGENT.md`. 
+Awesome job on your meticulous review, analysis and planning. Please keep up the good work. Now, please meticulously review the codebase files to align your understanding of the current state of the project and the actual implemention. Then meticulously create a briefing document for an AI coding agent to be able to continue from the present state. After conducting your meticulous codebase review to align your understanding of the codebase, you will create a comprehensive *single-source-of-truth* briefing document for any coding agent or human developer to have the same deep understanding of the project and the current codebase status. Save the agent *briefing document* that captures your aligned and validated understanding as a markdown file `CLAUDE.md`. 
 
 ---
 
@@ -46,6 +46,6 @@ Please meticulously review and analyze @CLAUDE.md , @GEMINI.md , @Project_Archit
 
 ---
 
-Awesome job on your meticulous analysis, planning and execution. Please keep up the good work in your rigorous and meticulous approach to planning and execution. Yes, please meticulously proceed with the next phase in your validated execution plan. Start by creating a detailed sub-plan for the phase, include a list of files to create or update, and for each file, include a description of features and interfaces as well as the checklist for it. This is to comply with the Meticulous approach of always plan before executing any task, and validate the result/outcome of the task execution.
+Awesome job on your meticulous analysis, planning and execution. Please keep up the good work in your rigorous and meticulous approach to planning and execution. Yes, please meticulously proceed with the next phase in your validated execution plan @VALIDATED_EXECUTION_PLAN.md . Start by creating a detailed sub-plan for the phase, include a list of files to create or update, and for each file, include a description of features and interfaces as well as the checklist for it. This is to comply with the Meticulous approach of always plan before executing any task, and validate the result/outcome of the task execution.
 
 You will create a detailed Phase 2 sub-plan document with comprehensive breakdowns for each task, following the meticulous planning approach. Create a comprehensive document that breaks down each task with file paths, features, interfaces, checklists, and success criteria.
