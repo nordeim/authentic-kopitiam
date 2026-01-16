@@ -9,20 +9,29 @@ export interface ToastProps {
   onDismiss: () => void;
 }
 
-export const useToastStore = create<ToastStore>((set) => ({
+interface ToastStore {
+  toasts: ToastProps[];
+  showToast: (data: Omit<ToastProps, 'id'>) => string;
+  dismissToast: (id: string) => void;
+  clearAll: () => void;
+}
+
+export const useToastStore = create<ToastStore>((set, get) => ({
   toasts: [],
 
-  showToast: (data: ToastProps) => {
-    set((state) => ({
-      toasts: [...state.toasts.slice(-4), data],
+  showToast: (data: Omit<ToastProps, 'id'>) => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    const toastWithId: ToastProps = { ...data, id, onDismiss: () => get().dismissToast(id) };
+    set((state: ToastStore) => ({
+      toasts: [...state.toasts.slice(-4), toastWithId],
     }));
     setTimeout(() => {
-      useToastStore.getState().dismissToast(data.id);
+      get().dismissToast(id);
     }, 5000);
-    return data.id;
+    return id;
   },
 
-  dismissToast: (id: string) => set((state) => ({
+  dismissToast: (id: string) => set((state: ToastStore) => ({
     toasts: state.toasts.filter((t) => t.id !== id),
   })),
 

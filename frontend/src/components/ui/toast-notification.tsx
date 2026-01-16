@@ -33,14 +33,8 @@ export function Toast({
       role="alert"
       aria-live="polite"
     >
-      <div className="toast__content">
+       <div className="toast__content">
         <p>{message}</p>
-      </div>
-
-      <div className="toast__actions">
-        <button onClick={onDismiss} className="toast__dismiss" aria-label="Dismiss" type="button">
-          <X size={16} />
-        </button>
       </div>
 
       <div className="toast__actions">
@@ -82,7 +76,7 @@ export function Toaster({ position = 'top-right' }: ToasterProps) {
         }
       `}</style>
       <div className={`toaster ${toasts.length > 0 ? 'toaster--has-toasts' : ''}`}>
-        {toasts.map((toast) => (
+        {toasts.map((toast: ToastProps & { id: string }) => (
           <Toast key={toast.id} {...toast} />
         ))}
       </div>

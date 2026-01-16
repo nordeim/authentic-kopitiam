@@ -16,9 +16,12 @@ interface FilterStore extends FilterState {
 export const useFilterStore = create<FilterStore>((set) => ({
   activeFilter: 'All',
 
-  setActiveFilter: (filter) => {
+  setActiveFilter: (filter: CategoryFilter) => {
     set({ activeFilter: filter });
   },
 }));
 
-export const useFilterQuery = () => useQueryState('category', 'All');
+export const useFilterQuery = () => useQueryState(
+  'category',
+  { defaultValue: 'All' as CategoryFilter }
+);
