@@ -1,3 +1,5 @@
+'use client';
+
 import { SteamRise } from './steam-rise';
 
 interface FloatingCoffeeCupProps {

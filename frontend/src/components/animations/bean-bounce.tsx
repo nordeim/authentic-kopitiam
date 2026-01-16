@@ -39,10 +39,10 @@ function Bean({ delay }: BeanProps) {
 
 export function BeanBounce({
   count = 3,
-  delay: undefined,
+  delay,
 }: BeanBounceProps) {
-  const delays = [0, 0.2, 0.4];
-
+  const delays = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8];
+  
   return (
     <>
       <style jsx>{`
@@ -70,12 +70,15 @@ export function BeanBounce({
           justifyContent: 'center',
         }}
       >
-        {Array.from({ length: count }).map((_, index) => (
-          <Bean
-            key={index}
-            delay={delay !== undefined ? delay : delays[index]}
-          />
-        ))}
+        {Array.from({ length: count }).map((_, index) => {
+          const beanDelay: number = delay !== undefined ? delay : (delays[index % delays.length] as number);
+          return (
+            <Bean
+              key={index}
+              delay={beanDelay}
+            />
+          );
+        })}
       </div>
     </>
   );

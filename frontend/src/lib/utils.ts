@@ -253,14 +253,13 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  let lastFunc: NodeJS.Timeout | null = null;
-
+  
   return function executedFunction(...args: Parameters<T>) {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-
-      lastFunc = setTimeout(() => {
+      
+      setTimeout(() => {
         inThrottle = false;
       }, limit);
     }

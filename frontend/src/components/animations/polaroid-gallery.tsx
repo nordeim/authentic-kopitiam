@@ -1,4 +1,6 @@
-interface PolaroidPhoto {
+'use client';
+
+export interface PolaroidPhoto {
   id: string;
   caption: string;
   imageUrl?: string;

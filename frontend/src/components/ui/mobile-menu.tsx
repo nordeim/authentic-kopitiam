@@ -1,7 +1,5 @@
 'use client';
 
-import { type ReactNode } from 'react';
-
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;

@@ -1,8 +1,10 @@
+'use client';
+
 import { SunburstBackground } from '@/components/animations/sunburst-background';
 import { FloatingCoffeeCup } from '@/components/animations/floating-coffee-cup';
 import { HeroStats } from '@/components/animations/hero-stats';
 import { WaveDivider } from '@/components/ui/wave-divider';
-import { AnimatedSection } from '@/hooks/use-in-view';
+import { AnimatedSection } from '@/components/ui/animated-section';
 import { RetroButton } from '@/components/ui/retro-button';
 
 export default function HeroPage() {
@@ -29,10 +31,10 @@ export default function HeroPage() {
           </p>
 
           <div className="hero__ctas">
-            <RetroButton variant="primary" href="#menu">
+            <RetroButton variant="primary" onClick={() => window.location.hash = '#menu'}>
               Explore Menu
             </RetroButton>
-            <RetroButton variant="secondary" href="#order">
+            <RetroButton variant="secondary" onClick={() => window.location.hash = '#order'}>
               Order Online
             </RetroButton>
           </div>

@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Menu, X } from 'lucide-react';
+import { ShoppingCart, Menu } from 'lucide-react';
 import { MobileMenu } from '@/components/ui/mobile-menu';
-import { RetroButton } from '@/components/ui/retro-button';
 import { useCartStore } from '@/store/cart-store';
 
 interface NavItem {
@@ -13,16 +12,16 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Menu', href: '#menu' },
-  { label: 'Our Story', href: '#heritage' },
-  { label: 'Visit Us', href: '#locations' },
-  { label: 'Order', href: '#order' },
+  { label: 'Menu', href: '/menu' as any },
+  { label: 'Our Story', href: '/heritage' as any },
+  { label: 'Visit Us', href: '/locations' as any },
+  { label: 'Order', href: '/#order' as any },
 ];
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const cartItemCount = useCartStore(state => state.getItemCount());
+  const cartItemCount = useCartStore(state => state.items.reduce((sum, item) => sum + item.quantity, 0));
 
   useEffect(() => {
     if (isMobileMenuOpen || isCartOpen) {
@@ -76,7 +75,7 @@ export function Header() {
             <ul className="nav__list">
               {NAV_ITEMS.map(item => (
                 <li key={item.href}>
-                  <Link href={item.href} className="nav__link">
+                  <Link href={item.href as any} className="nav__link">
                     {item.label}
                   </Link>
                 </li>

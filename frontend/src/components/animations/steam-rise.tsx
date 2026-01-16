@@ -15,10 +15,12 @@ function SteamParticle({ delay, x, size }: SteamParticleProps) {
       style={{
         width: `${size}px`,
         height: `${size}px`,
-        background: 'rgba(255, 255, 255, 0.7)',
+        background: 'rgba(255,255,255, 0.7)',
         borderRadius: '50%',
         animation: `steamRise 2s ease-in-out infinite`,
         animationDelay: `${delay}s`,
+        position: 'relative',
+        left: `${x}px`,
       }}
     />
   );

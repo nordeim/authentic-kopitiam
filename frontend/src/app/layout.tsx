@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Fraunces, DM_Sans } from '@/lib/fonts';
-import './styles/globals.css';
+import '../styles/globals.css';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 

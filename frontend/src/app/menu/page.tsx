@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { RetroButton } from '@/components/ui/retro-button';
-import { AnimatedSection } from '@/hooks/use-in-view';
+import { AnimatedSection } from '@/components/ui/animated-section';
 import { BeanBounce } from '@/components/animations/bean-bounce';
-import { WaveDivider } from '@/components/ui/wave-divider';
 
 interface MenuItem {
   id: string;

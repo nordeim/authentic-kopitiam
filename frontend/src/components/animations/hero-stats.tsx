@@ -13,7 +13,7 @@ export function HeroStats({
   label,
   delay = 0,
 }: HeroStatsProps) {
-  const [isVisible, setIsVisible] = useInView({
+  const { inView: isVisible } = useInView({
     threshold: 0.1,
     triggerOnce: true,
   });

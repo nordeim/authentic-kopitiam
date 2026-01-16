@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode } from 'react';
+
 import { FadeIn, type FadeInProps } from '@/components/ui/fade-in';
 
 export interface AnimatedSectionProps extends FadeInProps {

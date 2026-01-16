@@ -18,9 +18,9 @@ interface SocialLink {
 }
 
 const FOOTER_LINKS: FooterLink[] = [
-  { label: 'Menu', href: '#menu' },
-  { label: 'Our Story', href: '#heritage' },
-  { label: 'Locations', href: '#locations' },
+  { label: 'Menu', href: '/menu' as any },
+  { label: 'Our Story', href: '/heritage' as any },
+  { label: 'Locations', href: '/locations' as any },
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Terms of Service', href: '/terms' },
 ];
@@ -37,7 +37,7 @@ const SOCIAL_LINKS: SocialLink[] = [
   { platform: 'TikTok', href: 'https://tiktok.com/@morningbrewsg', label: 'Follow us on TikTok' },
 ];
 
-export default function Footer() {
+export function Footer() {
   return (
     <footer className="footer">
       <div className="footer__border-top" />
@@ -59,7 +59,7 @@ export default function Footer() {
             <ul className="footer__links">
               {FOOTER_LINKS.map(link => (
                 <li key={link.href}>
-                  <Link href={link.href} className="footer__link">
+                  <Link href={link.href as any} className="footer__link">
                     <span className="footer__link__chevron">›</span>
                     {link.label}
                   </Link>

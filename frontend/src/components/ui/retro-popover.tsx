@@ -64,11 +64,12 @@ const RetroPopoverClose = forwardRef<
 
 RetroPopoverClose.displayName = Popover.Close.displayName;
 
+const RetroPopoverPortal = Popover.Portal;
+
 export {
   RetroPopover,
   RetroPopoverTrigger,
   RetroPopoverContent,
   RetroPopoverClose,
-  RetroPopoverAnchor: Popover.Anchor,
-  RetroPopoverPortal: Popover.Portal,
+  RetroPopoverPortal,
 };

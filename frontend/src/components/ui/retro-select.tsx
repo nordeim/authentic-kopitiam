@@ -105,6 +105,9 @@ const RetroSelectSeparator = forwardRef<
 
 RetroSelectSeparator.displayName = Select.Separator.displayName;
 
+const RetroSelectValue = Select.Value;
+const RetroSelectGroup = Select.Group;
+
 export {
   RetroSelect,
   RetroSelectTrigger,
@@ -112,6 +115,6 @@ export {
   RetroSelectLabel,
   RetroSelectItem,
   RetroSelectSeparator,
-  RetroSelectValue: Select.Value,
-  RetroSelectGroup: Select.Group,
+  RetroSelectValue,
+  RetroSelectGroup,
 };

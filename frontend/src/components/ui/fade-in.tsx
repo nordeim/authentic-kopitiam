@@ -29,11 +29,10 @@ export function FadeIn({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          if (once && hasAnimated) return;
-          setIsVisible(true);
-          setHasAnimated(true);
-        }
+        if (!entry || !entry.isIntersecting) return;
+        if (once && hasAnimated) return;
+        setIsVisible(true);
+        setHasAnimated(true);
       },
       {
         threshold,

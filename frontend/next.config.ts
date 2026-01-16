@@ -8,10 +8,7 @@ const nextConfig: NextConfig = {
     typedRoutes: true,
     serverActions: {
       bodySizeLimit: '2mb',
-      allowedOrigins: ['localhost:8000'],
-      cacheStrategy: 'memory',
-      timing: false,
-      allowedResponseSize: '4mb'
+      allowedOrigins: ['localhost:8000']
       },
       optimizePackageImports: ['lucide-react']
   },

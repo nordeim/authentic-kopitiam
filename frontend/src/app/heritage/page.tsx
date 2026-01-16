@@ -1,6 +1,8 @@
+'use client';
+
 import { PolaroidGallery, type PolaroidPhoto } from '@/components/animations/polaroid-gallery';
 import { RetroButton } from '@/components/ui/retro-button';
-import { AnimatedSection } from '@/hooks/use-in-view';
+import { AnimatedSection } from '@/components/ui/animated-section';
 
 const POLAROID_PHOTOS: PolaroidPhoto[] = [
   {
@@ -78,7 +80,7 @@ export default function HeritagePage() {
               <p>
                 Join our story and become part of the Morning Brew Collective family. Every cup you enjoy connects you to five decades of Singaporean kopitiam tradition.
               </p>
-              <RetroButton variant="primary" href="#order">
+              <RetroButton variant="primary" onClick={() => window.location.hash = '#order'}>
                 Join Our Story
               </RetroButton>
             </div>
