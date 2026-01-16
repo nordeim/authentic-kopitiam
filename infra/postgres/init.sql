@@ -7,6 +7,16 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Create additional schemas if needed
 CREATE SCHEMA IF NOT EXISTS audit;
 
+-- Explicit timezone setting for Singapore (UTC+8, no DST)
+SET TIME ZONE 'Asia/Singapore';
+
+-- Explicit client encoding for multilingual support
+SET client_encoding = 'UTF8';
+
+-- Grant permissions to brew_user
+GRANT ALL PRIVILEGES ON SCHEMA public TO brew_user;
+GRANT ALL PRIVILEGES ON SCHEMA audit TO brew_user;
+
 -- Grant permissions to brew_user
 GRANT ALL PRIVILEGES ON SCHEMA public TO brew_user;
 GRANT ALL PRIVILEGES ON SCHEMA audit TO brew_user;

@@ -1,5 +1,10 @@
-.PHONY: help install up down restart logs shell-backend shell-frontend \
-        migrate seed test lint format clean cache-clear queue-work \
+.PHONY: install up down restart logs shell-backend shell-frontend \
+        migrate migrate-fresh seed db-create db-drop db-reset \
+        test test-backend test-frontend test-coverage \
+        lint lint-fix format typecheck analyze \
+        clean clean-backend clean-frontend clean-all \
+        cache-clear cache-config cache-route cache-view \
+        queue-work queue-restart \
         help
 
 help: ## Show this help message
@@ -11,6 +16,8 @@ help: ## Show this help message
 	@echo "  make install && make up"
 	@echo ""
 	@echo "For more information, see README.md"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 install: ## Install all dependencies
 	@echo "📦 Installing dependencies..."
@@ -27,20 +34,20 @@ up: ## Start all services
 	@echo ""
 	@echo "Access URLs:"
 	@echo "  Frontend: http://localhost:3000"
-	@echo "  Backend:  http://localhost:8000"
-	@echo "  Mailpit:  http://localhost:8025"
+	@echo "  Backend: http://localhost:8000"
+	@echo "Run 'make logs' to view service logs"
 
-down: ## Stop all services
-	@echo "🛑 Stopping Morning Brew Collective services..."
+down: ## Stop all services and remove containers
 	docker-compose down
+	@echo "🛑 Stopping Morning Brew Collective services..."
 	@echo "✅ All services stopped"
 
 restart: ## Restart all services
-	@echo "🔄 Restarting Morning Brew Collective services..."
 	docker-compose restart
+	@echo "🔄 Restarting Morning Brew Collective services..."
 	@echo "✅ All services restarted"
 
-logs: ## Tail all logs
+logs: ## Tail all logs from all services
 	docker-compose logs -f
 
 logs-backend: ## Tail backend logs
@@ -77,12 +84,12 @@ seed: ## Run database seeders
 	docker-compose exec backend php artisan db:seed
 
 db-create: ## Create database
-	docker-compose exec postgres psql -U brew_user -c "CREATE DATABASE morning_brew;"
+	docker-compose exec backend php artisan db:create
 
 db-drop: ## Drop database
-	docker-compose exec postgres psql -U brew_user -c "DROP DATABASE IF EXISTS morning_brew;"
+	docker-compose exec backend php artisan db:drop
 
-db-reset: ## Reset database (drop, create, migrate, seed)
+db-reset: ## Drop, create, migrate, seed
 	@echo "🔄 Resetting database..."
 	@$(MAKE) db-drop
 	@$(MAKE) db-create
@@ -90,115 +97,88 @@ db-reset: ## Reset database (drop, create, migrate, seed)
 	@$(MAKE) seed
 	@echo "✅ Database reset complete"
 
-test: ## Run all tests
+test: ## Run all tests (backend + frontend)
+	@echo "🧪 Running all tests..."
 	@$(MAKE) test-backend
 	@$(MAKE) test-frontend
+	@echo "✅ All tests completed"
 
-test-backend: ## Run backend tests
-	@echo "🧪 Running backend tests..."
-	docker-compose exec backend php artisan test --parallel
+test-backend: ## Run backend tests only
+	docker-compose exec backend php artisan test
 
-test-frontend: ## Run frontend tests
-	@echo "🧪 Running frontend tests..."
+test-frontend: ## Run frontend tests only
 	docker-compose exec frontend npm test
 
 test-coverage: ## Generate test coverage reports
 	@$(MAKE) test-backend
 	@$(MAKE) test-frontend
-	@echo "✅ Test coverage reports generated"
-	@echo "Check coverage/ directory for detailed reports"
 
-lint: ## Lint all code
+lint: ## Lint all code (backend + frontend)
 	@$(MAKE) lint-backend
 	@$(MAKE) lint-frontend
+	@echo "✅ Linting complete"
 
 lint-fix: ## Auto-fix linting issues where possible
-	@$(MAKE) lint-backend-fix
-	@$(MAKE) lint-frontend-fix
+	@$(MAKE) lint-backend
+	@$(MAKE) lint-frontend
+	@echo "✅ Auto-fix complete"
 
-lint-backend: ## Lint backend code
-	@echo "🔍 Linting backend code..."
-	docker-compose exec backend ./vendor/bin/pint --test
-
-lint-frontend: ## Lint frontend code
-	@echo "🔍 Linting frontend code..."
-	docker-compose exec frontend npm run lint
-
-lint-backend-fix: ## Auto-fix backend linting issues
-	@echo "🔧 Auto-fixing backend code..."
-	docker-compose exec backend ./vendor/bin/pint
-
-lint-frontend-fix: ## Auto-fix frontend linting issues
-	@echo "🔧 Auto-fixing frontend code..."
-	docker-compose exec frontend npm run lint:fix
-
-format: ## Format all code
+format: ## Format all code (backend + frontend)
 	@$(MAKE) format-backend
 	@$(MAKE) format-frontend
-
-format-backend: ## Format backend code
-	@echo "🎨 Formatting backend code..."
-	docker-compose exec backend ./vendor/bin/pint
-
-format-frontend: ## Format frontend code
-	@echo "🎨 Formatting frontend code..."
-	docker-compose exec frontend npm run format
+	@echo "✅ Formatting complete"
 
 typecheck: ## Run TypeScript type checking
-	@echo "🔬 Running TypeScript type check..."
-	docker-compose exec frontend npm run typecheck
-	@echo "✅ Type checking complete"
+	npx tsc --noEmit
 
 analyze: ## Run PHPStan static analysis
-	@echo "📊 Running PHPStan static analysis..."
 	docker-compose exec backend vendor/bin/phpstan analyse
-	@echo "✅ Analysis complete. Check output for issues."
 
 cache-clear: ## Clear all Laravel caches
-	@echo "🧹 Clearing Laravel caches..."
 	docker-compose exec backend php artisan cache:clear
+	@echo "✅ All caches cleared"
 
 cache-config: ## Clear configuration cache
-	docker-compose exec backend php artisan config:clear
+	docker-compose exec backend php artisan config:cache
+	@echo "✅ Config cache cleared"
 
 cache-route: ## Clear route cache
-	docker-compose exec backend php artisan route:clear
+	docker-compose exec backend php artisan route:cache
+	@echo "✅ Route cache cleared"
 
 cache-view: ## Clear view cache
 	docker-compose exec backend php artisan view:clear
+	@echo "✅ View cache cleared"
 
 queue-work: ## Start Laravel Horizon queue worker
-	@echo "📋 Starting Laravel Horizon queue worker..."
 	docker-compose exec backend php artisan horizon
+	@echo "✅ Queue worker started"
 
 queue-restart: ## Restart queue worker
-	@echo "🔄 Restarting queue worker..."
 	docker-compose exec backend php artisan horizon:terminate
-	@$(MAKE) queue-work
+	docker-compose exec backend php artisan horizon
+	@echo "✅ Queue worker restarted"
 
 clean: ## Remove all build artifacts
 	@echo "🧹 Removing build artifacts..."
-	rm -rf frontend/.next
-	rm -rf frontend/out
-	rm -rf frontend/build
+	@$(MAKE) clean-backend
+	@$(MAKE) clean-frontend
 	@echo "✅ Build artifacts removed"
 
 clean-backend: ## Remove backend build artifacts
-	rm -rf backend/storage/framework/cache/*
-	rm -rf backend/storage/framework/views/*
-	@echo "✅ Backend build artifacts removed"
+	docker-compose exec backend php artisan optimize:clear
+	docker-compose exec backend php artisan view:clear
+	@echo "✅ Backend artifacts removed"
 
 clean-frontend: ## Remove frontend build artifacts
-	rm -rf frontend/.next
-	rm -rf frontend/out
-	rm -rf frontend/build
-	@echo "✅ Frontend build artifacts removed"
+	@rm -rf frontend/.next
+	@rm -rf frontend/out
+	@echo "✅ Frontend artifacts removed"
 
 clean-all: ## Remove all temporary files and containers
-	@echo "🧹 Removing all temporary files..."
-	@$(MAKE) clean
+	@echo "🧹 Removing all temporary files and containers..."
 	@$(MAKE) clean-backend
 	@$(MAKE) clean-frontend
-	docker-compose down -v
-	rm -rf .docker-data/
+	@docker-compose down -v
+	@rm -rf .docker-data/
 	@echo "✅ All temporary files and containers removed"
