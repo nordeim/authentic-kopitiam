@@ -76,7 +76,8 @@ interface FilterButtonsProps {
 const CATEGORIES = ['All', 'Coffee', 'Breakfast', 'Pastries', 'Sides'] as const;
 
 export function FilterButtons({ className = '' }: FilterButtonsProps) {
-  const activeFilter = useFilterQuery();
+  const filterQuery = useFilterQuery();
+  const activeFilter = filterQuery[0] as string;
   const setActiveFilter = useFilterStore((state) => state.setActiveFilter);
 
   return (
@@ -100,7 +101,7 @@ export function FilterButtons({ className = '' }: FilterButtonsProps) {
           key={category}
           category={category}
           isActive={activeFilter === category}
-          onClick={() => setActiveFilter(category as any)}
+          onClick={() => setActiveFilter(category)}
         />
       ))}
     </div>

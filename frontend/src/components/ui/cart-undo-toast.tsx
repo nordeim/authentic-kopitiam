@@ -1,6 +1,6 @@
 'use client';
 
-import { useToastStore } from '@/store/toast-store';
+import { useEffect } from 'react';
 import { X, Undo2 } from 'lucide-react';
 
 interface CartUndoToastProps {

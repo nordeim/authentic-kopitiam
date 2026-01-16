@@ -2,42 +2,27 @@
 
 import { create } from 'zustand';
 
-interface ToastProps {
+export interface ToastProps {
   id: string;
   message: string;
   variant: 'success' | 'info' | 'warning';
   onDismiss: () => void;
-  undoAction?: () => void;
-  undoText?: string;
-}
-
-type ToastVariant = 'success' | 'info' | 'warning';
-
-interface ToastData extends Omit<ToastProps, 'id'> {
-}
-
-interface ToastStore {
-  toasts: ToastProps[];
-  showToast: (data: ToastData) => string;
-  dismissToast: (id: string) => void;
-  clearAll: () => void;
 }
 
 export const useToastStore = create<ToastStore>((set) => ({
   toasts: [],
 
-  showToast: (data) => {
-    const id = data.id || `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  showToast: (data: ToastProps) => {
     set((state) => ({
-      toasts: [...state.toasts.slice(-4), { ...data, id }],
+      toasts: [...state.toasts.slice(-4), data],
     }));
     setTimeout(() => {
-      useToastStore.getState().dismissToast(id);
+      useToastStore.getState().dismissToast(data.id);
     }, 5000);
-    return id;
+    return data.id;
   },
 
-  dismissToast: (id) => set((state) => ({
+  dismissToast: (id: string) => set((state) => ({
     toasts: state.toasts.filter((t) => t.id !== id),
   })),
 

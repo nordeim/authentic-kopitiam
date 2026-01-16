@@ -36,6 +36,12 @@ interface CartState {
   getGST: () => number;
   getTotal: () => number;
   getItemCount: () => number;
+  addItem: (item: CartItem) => void;
+  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
+  undo: () => void;
+  redo: () => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -49,7 +55,7 @@ export const useCartStore = create<CartState>()(
       canUndo: false,
       canRedo: false,
 
-      addItem: (item) =>
+      addItem: (item: CartItem) =>
         set((state) => {
           const existingItem = state.items.find((i) => i.id === item.id);
           let newItems: CartItem[];
@@ -82,7 +88,7 @@ export const useCartStore = create<CartState>()(
           };
         }),
 
-      removeItem: (id) =>
+      removeItem: (id: string) =>
         set((state) => {
           const itemToRemove = state.items.find((i) => i.id === id);
           const newItems = state.items.filter((i) => i.id !== id);
@@ -108,9 +114,8 @@ export const useCartStore = create<CartState>()(
           };
         }),
 
-      updateQuantity: (id, quantity) =>
+      updateQuantity: (id: string, quantity: number) =>
         set((state) => {
-          const itemToUpdate = state.items.find((i) => i.id === id);
           const newItems = state.items
             .map((i) => (i.id === id ? { ...i, quantity: Math.max(0, quantity) } : i))
             .filter((i) => i.quantity > 0);

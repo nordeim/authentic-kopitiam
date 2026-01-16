@@ -29,18 +29,20 @@ export function AddToCartButton({
 
     setIsLoading(true);
     try {
-      addToCart(item);
+      addToCart({ ...item, quantity: 1, category: 'menu' });
 
       if (showFeedback) {
         showToast({
           message: `${item.name} added to cart`,
           variant: 'success',
+          onDismiss: () => {},
         });
       }
     } catch (error) {
       showToast({
         message: 'Failed to add item to cart',
         variant: 'warning',
+        onDismiss: () => {},
       });
     } finally {
       setIsLoading(false);

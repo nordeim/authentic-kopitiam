@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useCartStore } from '@/store/cart-store';
 
 interface KeyboardShortcutsConfig {
   onUndo?: () => void;

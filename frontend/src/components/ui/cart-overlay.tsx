@@ -9,17 +9,8 @@ interface CartOverlayProps {
   onClose: () => void;
 }
 
-interface CartStore {
-  items: CartItem[];
-  getSubtotal: () => number;
-  getGST: () => number;
-  getTotal: () => number;
-  clearCart: () => void;
-}
-
 export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
-  const cartStore = useCartStore();
-  const { items, getSubtotal, getGST, getTotal, clearCart } = cartStore;
+  const { items, getSubtotal, getGST, getTotal, clearCart } = useCartStore();
 
   useEffect(() => {
     if (isOpen) {
