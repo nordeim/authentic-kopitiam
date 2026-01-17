@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
 use App\Models\Product;
+use Carbon\Carbon;
 
 class InventoryService
 {
@@ -12,39 +13,38 @@ class InventoryService
 
     /**
      * Soft reserve inventory in Redis
-     * @param array $items Array of ['product_id' => string, 'quantity' => int]
+     * @param array $items Array of items with product_id and quantity
      * @return string Reservation token
      */
     public function reserve(array $items): string
     {
         $token = $this->generateToken();
-        $expiresAt = now()->addSeconds(self::RESERVATION_TTL);
+        $expiresAt = Carbon::now()->addSeconds(self::RESERVATION_TTL);
 
         foreach ($items as $item) {
             $productId = $item['product_id'];
             $quantity = $item['quantity'];
 
-            // Check availability in PostgreSQL
             $product = Product::findOrFail($productId);
             $availableStock = $this->getAvailableStock($productId);
 
             if ($availableStock < $quantity) {
-                throw new \InvalidArgumentException("Insufficient stock for product {$productId}. Available: {$availableStock}, Requested: {$quantity}");
+                throw new \InvalidArgumentException(
+                    "Insufficient stock for product {$productId}. Available: {$availableStock}, Requested: {$quantity}"
+                );
             }
 
-            // Soft reserve in Redis
             $reservationKey = $this->getReservationKey($token, $productId);
             $reservationData = [
                 'product_id' => $productId,
                 'quantity' => $quantity,
-                'reserved_at' => now()->toIso8601String(),
+                'reserved_at' => Carbon::now()->toIso8601String(),
                 'expires_at' => $expiresAt->toIso8601String(),
                 'order_id' => null,
             ];
 
             Redis::setex($reservationKey, self::RESERVATION_TTL, json_encode($reservationData));
 
-            // Increment total reserved count for this product
             $reservedCountKey = $this->getReservedCountKey($productId);
             Redis::incrby($reservedCountKey, $quantity);
             Redis::expire($reservedCountKey, self::RESERVATION_TTL);
@@ -61,37 +61,76 @@ class InventoryService
     public function commit(string $token, string $orderId): void
     {
         $pattern = $this->getReservationKeyPattern($token);
-        $keys = Redis::keys($pattern);
+        $fullKeys = $this->scanKeys($pattern);
 
-        \Log::debug('Inventory commit debug', [
+        Log::debug('Inventory commit debug', [
             'token' => $token,
             'pattern' => $pattern,
-            'keys_found' => $keys,
+            'full_keys_found' => $fullKeys,
         ]);
 
-        if (empty($keys)) {
+        if (empty($fullKeys)) {
             throw new \InvalidArgumentException("Reservation token {$token} not found or expired");
         }
 
-        $reservations = Redis::mget($keys);
+        // Fix: Extract original keys (without prefix) for MGET
+        // Laravel Redis facade re-adds prefix, so we need unprefixed keys
+        $keysForMget = [];
+        $prefix = config('database.redis.options.prefix', '');
+        
+        foreach ($fullKeys as $fullKey) {
+            $originalKey = $prefix ? str_replace($prefix, '', $fullKey) : $fullKey;
+            $keysForMget[] = $originalKey;
+            Log::debug('Key prefix handling', [
+                'full_key' => $fullKey,
+                'prefix' => $prefix,
+                'original_key' => $originalKey,
+            ]);
+        }
 
-        \Log::debug('Inventory commit mget results', [
-            'keys' => $keys,
+        $reservations = Redis::mget($keysForMget);
+
+        Log::debug('Inventory commit mget results', [
+            'keys_for_mget' => $keysForMget,
+            'prefix_used' => $prefix,
             'reservations' => $reservations,
         ]);
 
-        foreach ($keys as $index => $key) {
+        // Filter out null/expired values
+        $validReservations = [];
+        foreach ($fullKeys as $index => $fullKey) {
+            if (!isset($reservations[$index]) || $reservations[$index] === null) {
+                Log::warning("Skipped null reservation value at index {$index} for key: {$fullKey}");
+                continue;
+            }
+
             $reservationData = json_decode($reservations[$index], true);
 
-            \Log::debug('Inventory commit json decode', [
-                'key' => $key,
-                'raw_value' => $reservations[$index],
-                'decoded' => $reservationData,
-            ]);
-
             if (!$reservationData) {
-                throw new \RuntimeException("Invalid reservation data");
+                Log::warning("Invalid JSON for key {$fullKey}: {$reservations[$index]}", [
+                    'json_error' => json_last_error_msg(),
+                ]);
+                continue;
             }
+
+            $validReservations[] = [
+                'key' => $fullKey,
+                'data' => $reservationData,
+            ];
+        }
+
+        if (empty($validReservations)) {
+            throw new \RuntimeException("No valid reservations found for token {$token}");
+        }
+
+        foreach ($validReservations as $reservation) {
+            $fullKey = $reservation['key'];
+            $reservationData = $reservation['data'];
+
+            Log::debug('Processing reservation', [
+                'key' => $fullKey,
+                'data' => $reservationData,
+            ]);
 
             // Decrement stock in PostgreSQL
             $productId = $reservationData['product_id'];
@@ -101,8 +140,8 @@ class InventoryService
             $product->decrement('stock_quantity', $quantity);
             $product->save();
 
-            // Remove reservation from Redis
-            Redis::del($key);
+            // Remove reservation from Redis using the FULL key (which includes prefix)
+            Redis::del($fullKey);
 
             // Decrement reserved count
             $reservedCountKey = $this->getReservedCountKey($productId);
@@ -117,23 +156,45 @@ class InventoryService
     public function rollback(string $token): void
     {
         $pattern = $this->getReservationKeyPattern($token);
-        $keys = Redis::keys($pattern);
+        $keys = $this->scanKeys($pattern);
+
+        Log::debug('Inventory rollback', [
+            'token' => $token,
+            'pattern' => $pattern,
+            'keys_found' => $keys,
+        ]);
 
         if (empty($keys)) {
-            return; // Token doesn't exist or already expired
+            Log::warning("No keys found for rollback token: {$token}");
+            return;
         }
 
-        $reservations = Redis::mget($keys);
+        $fullKeys = $keys;
+        $prefix = config('database.redis.options.prefix', '');
+        $keysForMget = [];
+        
+        foreach ($fullKeys as $fullKey) {
+            $originalKey = $prefix ? str_replace($prefix, '', $fullKey) : $fullKey;
+            $keysForMget[] = $originalKey;
+        }
 
-        foreach ($keys as $index => $key) {
+        $reservations = Redis::mget($keysForMget);
+
+        foreach ($fullKeys as $index => $fullKey) {
+            if (!isset($reservations[$index]) || $reservations[$index] === null) {
+                Log::warning("Skipped null rollback key: {$fullKey}");
+                continue;
+            }
+
             $reservationData = json_decode($reservations[$index], true);
 
             if (!$reservationData) {
+                Log::warning("Invalid JSON in rollback for key {$fullKey}: {$reservations[$index]}");
                 continue;
             }
 
             // Remove reservation from Redis
-            Redis::del($key);
+            Redis::del($fullKey);
 
             // Decrement reserved count
             $productId = $reservationData['product_id'];
@@ -153,12 +214,10 @@ class InventoryService
         $product = Product::findOrFail($productId);
         $totalStock = $product->stock_quantity ?? 0;
 
-        // Subtract reserved from Redis
         $reservedCountKey = $this->getReservedCountKey($productId);
         $reservedCount = (int) Redis::get($reservedCountKey) ?? 0;
 
         $availableStock = $totalStock - $reservedCount;
-
         return max(0, $availableStock);
     }
 
@@ -168,12 +227,11 @@ class InventoryService
     public function cleanupExpired(): void
     {
         $pattern = $this->getAllReservationsKeyPattern();
-        $keys = Redis::keys($pattern);
+        $keys = $this->scanKeys($pattern);
 
         foreach ($keys as $key) {
             $ttl = Redis::ttl($key);
 
-            // If TTL is -1 (no expiration) or -2 (key doesn't exist), clean up
             if ($ttl === -1) {
                 $reservationData = Redis::get($key);
                 if ($reservationData) {
@@ -189,6 +247,48 @@ class InventoryService
                 Redis::del($key);
             }
         }
+    }
+
+    /**
+     * Scan keys using Redis SCAN (with fallback to KEYS)
+     * @param string $pattern Key pattern
+     * @return array Array of keys
+     */
+    protected function scanKeys(string $pattern): array
+    {
+        $keys = [];
+        
+        try {
+            $cursor = 0;
+            do {
+                $result = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);
+                
+                if ($result === false || !is_array($result)) {
+                    break;
+                }
+
+                $cursor = $result[0];
+                if (isset($result[1]) && is_array($result[1])) {
+                    $keys = array_merge($keys, $result[1]);
+                }
+            } while ($cursor !== 0);
+        } catch (\Exception $e) {
+            Log::warning("SCAN failed, falling back to KEYS: {$e->getMessage()}");
+        }
+
+        if (empty($keys)) {
+            $keys = Redis::keys($pattern);
+        }
+
+        $uniqueKeys = array_unique($keys);
+        
+        Log::debug('Key scan results', [
+            'pattern' => $pattern,
+            'method' => empty($keys) ? 'keys' : 'scan',
+            'keys_found' => count($uniqueKeys),
+        ]);
+
+        return $uniqueKeys;
     }
 
     /**
