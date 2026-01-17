@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LocationResource;
 use App\Models\Location;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,71 +11,82 @@ use Illuminate\Support\Facades\Validator;
 
 class LocationController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'lat' => 'numeric|between:-90,90',
-            'lon' => 'numeric|between:-180,180',
-            'max_distance_km' => 'numeric|min:0',
-            'features' => 'array',
-            'features.*' => 'string',
-        ]);
+     public function index(Request $request): JsonResponse
+     {
+         $validator = Validator::make($request->all(), [
+             'lat' => 'numeric|between:-90,90',
+             'lon' => 'numeric|between:-180,180',
+             'max_distance_km' => 'numeric|min:0',
+             'features' => 'array',
+             'features.*' => 'string',
+             'has_product' => 'string|uuid',
+             'feature' => 'string',
+         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+         if ($validator->fails()) {
+             return response()->json([
+                 'message' => 'Validation failed',
+                 'errors' => $validator->errors(),
+             ], 422);
+         }
 
-        $query = Location::query()->active();
+         $query = Location::query()->active();
 
-        // Apply distance calculation if lat/lon provided
-        if ($request->has('lat') && $request->has('lon')) {
-            $lat = $request->lat;
-            $lon = $request->lon;
-            $earthRadius = 6371; // km
+         // Apply distance calculation if lat/lon provided
+         if ($request->has('lat') && $request->has('lon')) {
+             $lat = $request->lat;
+             $lon = $request->lon;
+             $earthRadius = 6371; // km
 
-            $haversine = "(
-                6371 * ACOS(
-                    COS(RADIANS(latitude)) * COS(RADIANS($lat)) *
-                    COS(RADIANS(longitude) - RADIANS($lon)) +
-                    SIN(RADIANS(latitude)) * SIN(RADIANS($lat))
-                )
-            )";
+             $haversine = "(
+                 6371 * ACOS(
+                     COS(RADIANS(latitude)) * COS(RADIANS($lat)) *
+                     COS(RADIANS(longitude) - RADIANS($lon)) +
+                     SIN(RADIANS(latitude)) * SIN(RADIANS($lat))
+                 )
+             )";
 
-            $query->selectRaw("*, {$haversine} as distance_km")
-                ->orderBy('distance_km', 'asc');
+             $query->selectRaw("*, {$haversine} as distance_km")
+                 ->orderBy('distance_km', 'asc');
 
-            // Filter by max distance if provided
-            if ($request->has('max_distance_km')) {
-                $query->having('distance_km', '<=', $request->max_distance_km);
-            }
-        }
+             // Filter by max distance if provided
+             if ($request->has('max_distance_km')) {
+                 $query->having('distance_km', '<=', $request->max_distance_km);
+             }
+         }
 
-        // Apply feature filtering
-        if ($request->has('features')) {
-            $features = $request->features;
-            foreach ($features as $feature) {
-                $query->whereJsonContains('features', $feature);
-            }
-        }
+         // Apply product availability filter
+         if ($request->has('has_product')) {
+             $query->whereHas('products', function ($q) use ($request) {
+                 $q->where('product_id', $request->has_product);
+             });
+         }
 
-        $locations = $query->get();
+         // Apply feature filtering (support both 'feature' single and 'features' array)
+         if ($request->has('feature')) {
+             $query->whereJsonContains('features', $request->feature);
+         } elseif ($request->has('features')) {
+             $features = $request->features;
+             foreach ($features as $feature) {
+                 $query->whereJsonContains('features', $feature);
+             }
+         }
 
-        return response()->json([
-            'data' => $locations,
-        ]);
-    }
+         $locations = $query->get();
 
-    public function show(string $id): JsonResponse
-    {
-        $location = Location::with('products')->findOrFail($id);
+         return response()->json([
+             'data' => LocationResource::collection($locations),
+         ]);
+     }
 
-        return response()->json([
-            'data' => $location,
-        ]);
-    }
+     public function show(string $id): JsonResponse
+     {
+         $location = Location::query()->with('products')->findOrFail($id);
+
+         return response()->json([
+             'data' => new LocationResource($location),
+         ]);
+     }
 
     public function store(Request $request): JsonResponse
     {

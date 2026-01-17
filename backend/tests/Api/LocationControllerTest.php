@@ -24,13 +24,13 @@ class LocationControllerTest extends TestCase
         
         $this->locations = Location::factory()->count(3)->create([
             'operating_hours' => [
-                'monday' => ['open' => '07:00', 'close' => '22:00'],
-                'tuesday' => ['open' => '07:00', 'close' => '22:00'],
-                'wednesday' => ['open' => '07:00', 'close' => '22:00'],
-                'thursday' => ['open' => '07:00', 'close' => '22:00'],
-                'friday' => ['open' => '07:00', 'close' => '22:00'],
-                'saturday' => ['open' => '07:00', 'close' => '22:00'],
-                'sunday' => ['open' => '07:00', 'close' => '22:00'],
+                'mon' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'tue' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'wed' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'thu' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'fri' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'sat' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'sun' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
             ],
             'features' => ['wifi', 'outdoor_seating', 'cashless'],
         ]);

@@ -24,10 +24,12 @@ Route::prefix('v1')->group(function () {
   Route::put('orders/{id}/status', [OrderController::class, 'updateStatus'])
     ->middleware(['auth:sanctum']);
 
-  // Locations Resource
-  Route::apiResource('locations', LocationController::class)
-    ->only(['index', 'show', 'store', 'update', 'destroy'])
-    ->middleware(['auth:sanctum'])->except(['index', 'show']);
+  // Locations Resource - Explicit GET routes (apiResource only() not working reliably)
+  Route::get('locations', [LocationController::class, 'index']);
+  Route::get('locations/{location}', [LocationController::class, 'show']);
+  Route::post('locations', [LocationController::class, 'store'])->middleware(['auth:sanctum']);
+  Route::put('locations/{location}', [LocationController::class, 'update'])->middleware(['auth:sanctum']);
+  Route::delete('locations/{location}', [LocationController::class, 'destroy'])->middleware(['auth:sanctum']);
 
   // PDPA Consent Routes
   Route::post('consents', [PdpaConsentController::class, 'store'])
