@@ -51,7 +51,7 @@ services:
       - DB_PORT=5432
       - DB_DATABASE=morning_brew
       - DB_USERNAME=brew_user
-      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - DB_PASSWORD=${DB_PASSWORD:-brew_secret}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - CACHE_DRIVER=redis
