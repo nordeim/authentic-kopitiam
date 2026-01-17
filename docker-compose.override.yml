@@ -7,7 +7,7 @@ services:
       driver: "json-file"
       options:
         max-size: "10m"
-        max-file: "3m"
+        max-file: "3"
 
   redis:
     command: redis-server --appendonly yes --loglevel debug

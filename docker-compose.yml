@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: morning_brew
       POSTGRES_USER: brew_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-brew_secret}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
