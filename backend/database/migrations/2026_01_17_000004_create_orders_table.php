@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
             $table->string('invoice_number', 50)->unique();
             $table->string('customer_name', 255);
             $table->string('customer_phone', 20);
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->enum('payment_method', ['paynow', 'card', 'cash']);
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
             $table->text('notes')->nullable();
-            $table->uuid('user_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

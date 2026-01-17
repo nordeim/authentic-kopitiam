@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pdpa_consents', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
             $table->uuid('customer_id')->nullable();
             $table->string('pseudonymized_id', 64)->unique(); // SHA256 hash
             $table->enum('consent_type', ['marketing', 'analytics', 'third_party']);

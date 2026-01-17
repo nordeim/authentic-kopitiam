@@ -10,10 +10,12 @@ use App\Http\Controllers\Api\PdpaConsentController;
 // API Version Group
 Route::prefix('v1')->group(function () {
 
-  // Products Resource
-  Route::apiResource('products', ProductController::class)
-    ->only(['index', 'show', 'store', 'update', 'destroy'])
-    ->middleware(['auth:sanctum'])->except(['index', 'show']);
+  // Products Resource - Explicit routes (apiResource only() not working reliably)
+  Route::get('products', [ProductController::class, 'index']);
+  Route::get('products/{product}', [ProductController::class, 'show']);
+  Route::post('products', [ProductController::class, 'store'])->middleware(['auth:sanctum']);
+  Route::put('products/{product}', [ProductController::class, 'update'])->middleware(['auth:sanctum']);
+  Route::delete('products/{product}', [ProductController::class, 'destroy'])->middleware(['auth:sanctum']);
 
   // Orders Resource
   Route::apiResource('orders', OrderController::class)

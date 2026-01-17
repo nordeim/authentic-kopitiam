@@ -22,7 +22,7 @@ class ProductControllerTest extends TestCase
         $this->product = Product::factory()->create([
             'category_id' => $this->category->id,
             'price' => 13.50,
-            'active' => true,
+            'is_active' => true,
             'stock_quantity' => 50,
         ]);
     }
@@ -36,7 +36,7 @@ class ProductControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
-                '*' => ['id', 'name', 'slug', 'description', 'price', 'active', 'stock_quantity', 'category_id', 'created_at', 'updated_at']
+                '*' => ['id', 'name', 'description', 'price', 'is_active', 'stock_quantity', 'category_id', 'created_at', 'updated_at']
             ],
             'meta' => ['current_page', 'per_page', 'total', 'last_page', 'from', 'to'],
             'links' => ['first', 'last', 'prev', 'next']
@@ -79,10 +79,10 @@ class ProductControllerTest extends TestCase
 
     public function test_list_products_filter_by_active()
     {
-        Product::factory()->count(3)->create(['category_id' => $this->category->id, 'active' => false]);
-        Product::factory()->count(7)->create(['category_id' => $this->category->id, 'active' => true]);
+        Product::factory()->count(3)->create(['category_id' => $this->category->id, 'is_active' => false]);
+        Product::factory()->count(7)->create(['category_id' => $this->category->id, 'is_active' => true]);
         
-        $response = $this->getJson('/api/v1/products?active=true');
+        $response = $this->getJson('/api/v1/products?is_active=true');
         
         $response->assertStatus(200);
         $this->assertEquals(7 + 1, count($response->json('data'))); // +1 from setUp
@@ -104,7 +104,7 @@ class ProductControllerTest extends TestCase
         $response = $this->getJson('/api/v1/products/'.$this->product->id);
         
         $response->assertStatus(200);
-        $response->assertJsonStructure(['data' => ['id', 'name', 'slug', 'description', 'price', 'active', 'stock_quantity', 'category_id', 'created_at', 'updated_at']]);
+        $response->assertJsonStructure(['data' => ['id', 'name', 'description', 'price', 'is_active', 'stock_quantity', 'category_id', 'created_at', 'updated_at']]);
         $this->assertEquals($this->product->id, $response->json('data.id'));
     }
 

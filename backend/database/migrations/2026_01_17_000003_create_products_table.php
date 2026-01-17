@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
             $table->string('name', 255);
             $table->text('description')->nullable();
             $table->decimal('price', 10, 4); // DECIMAL(10,4) for GST precision

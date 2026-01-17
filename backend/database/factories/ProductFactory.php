@@ -21,12 +21,24 @@ class ProductFactory extends Factory
             ]),
             'description' => fake()->sentence(),
             'price' => fake()->randomFloat(4, 2.00, 15.00), // DECIMAL(10,4)
-            'category_id' => Category::inRandomOrder()->first()?->id,
+            'category_id' => $this->getValidCategoryId(),
             'is_active' => fake()->boolean(90), // 90% active
             'image_url' => fake()->imageUrl(400, 300, 'coffee'),
             'calories' => fake()->numberBetween(50, 500),
             'stock_quantity' => fake()->numberBetween(10, 100),
         ];
+    }
+
+    private function getValidCategoryId(): string
+    {
+        // During seeding or when no categories exist, create one
+        $category = Category::inRandomOrder()->first();
+        
+        if (!$category) {
+            $category = Category::factory()->create();
+        }
+        
+        return $category->id;
     }
 
     public function active(): self

@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+
 class Order extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected $keyType = "string";
+    public $incrementing = false;
 
     protected $fillable = [
         'invoice_number',

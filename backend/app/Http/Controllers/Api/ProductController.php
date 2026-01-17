@@ -58,6 +58,8 @@ class ProductController extends Controller
                 'last_page' => $products->lastPage(),
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
             ],
             'links' => [
                 'first' => $products->url(1),
