@@ -14,7 +14,7 @@ class LocationFactory extends Factory
         return [
             'name' => 'Morning Brew ' . fake()->randomElement(['Central', 'East', 'West', 'North', 'South']),
             'address_line1' => fake()->streetAddress(),
-            'address_line2' => fake()->secondaryAddress(),
+            'address_line2' => "Unit " . fake()->numberBetween(1, 50) . "-" . fake()->numberBetween(1, 9),
             'city' => 'Singapore',
             'postal_code' => str_pad(fake()->numberBetween(100000, 999999), 6, '0', STR_PAD_LEFT),
             'country' => 'Singapore',

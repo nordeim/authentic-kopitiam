@@ -14,9 +14,9 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'page' => 'integer|min:1',
-            'per_page' => 'integer|min:1|max:100',
+            'per_page.*integer|min:1',
             'category_id' => 'string|exists:categories,id',
-            'is_active' => 'boolean',
+            'is_active' => 'in:true,false,1,0',
             'search' => 'string|max:255',
         ]);
 
@@ -86,7 +86,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|between:0.0001,9999.9999',
             'category_id' => 'nullable|string|exists:categories,id',
-            'is_active' => 'boolean',
+            'is_active' => 'in:true,false,1,0',
             'image_url' => 'nullable|url|max:500',
             'calories' => 'nullable|integer|min:0',
             'stock_quantity' => 'nullable|integer|min:0',
@@ -116,7 +116,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'numeric|between:0.0001,9999.9999',
             'category_id' => 'nullable|string|exists:categories,id',
-            'is_active' => 'boolean',
+            'is_active' => 'in:true,false,1,0',
             'image_url' => 'nullable|url|max:500',
             'calories' => 'nullable|integer|min:0',
             'stock_quantity' => 'nullable|integer|min:0',

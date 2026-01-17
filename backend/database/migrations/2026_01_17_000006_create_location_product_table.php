@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('location_id');
             $table->uuid('product_id');
             $table->boolean('is_available')->default(true);
+            $table->integer('stock_quantity')->default(0);
             $table->timestamps();
 
             $table->foreign('location_id')->references('id')->on('locations')->cascadeOnDelete();
