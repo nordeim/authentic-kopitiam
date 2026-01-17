@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Log;
 use App\Models\Product;
 
 class InventoryService
@@ -62,14 +63,31 @@ class InventoryService
         $pattern = $this->getReservationKeyPattern($token);
         $keys = Redis::keys($pattern);
 
+        \Log::debug('Inventory commit debug', [
+            'token' => $token,
+            'pattern' => $pattern,
+            'keys_found' => $keys,
+        ]);
+
         if (empty($keys)) {
             throw new \InvalidArgumentException("Reservation token {$token} not found or expired");
         }
 
         $reservations = Redis::mget($keys);
 
+        \Log::debug('Inventory commit mget results', [
+            'keys' => $keys,
+            'reservations' => $reservations,
+        ]);
+
         foreach ($keys as $index => $key) {
             $reservationData = json_decode($reservations[$index], true);
+
+            \Log::debug('Inventory commit json decode', [
+                'key' => $key,
+                'raw_value' => $reservations[$index],
+                'decoded' => $reservationData,
+            ]);
 
             if (!$reservationData) {
                 throw new \RuntimeException("Invalid reservation data");

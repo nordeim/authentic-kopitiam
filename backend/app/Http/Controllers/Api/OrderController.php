@@ -142,6 +142,9 @@ class OrderController extends Controller
                 'payment_method' => $request->input('payment_method', 'paynow'),
                 'payment_status' => 'pending',
                 'notes' => $request->notes,
+                'subtotal_cents' => 0,
+                'gst_cents' => 0,
+                'total_cents' => 0,
             ]);
 
             // Create order items with price snapshotting

@@ -14,6 +14,7 @@ class OrderControllerTest extends TestCase
 
     private $category;
     private $products;
+    private $location;
 
     protected function setUp(): void
     {
@@ -25,15 +26,27 @@ class OrderControllerTest extends TestCase
             'price' => 13.50,
             'stock_quantity' => 10,
         ]);
+        $this->location = \App\Models\Location::factory()->create([
+            'operating_hours' => [
+                'mon' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'tue' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'wed' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'thu' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'fri' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'sat' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'sun' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+            ],
+        ]);
     }
 
     public function test_create_order_with_valid_data()
     {
         $orderData = [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
-            'pickup_location_id' => 1,
-            'pickup_datetime' => '2026-01-18T14:00:00+08:00',
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
@@ -47,10 +60,11 @@ class OrderControllerTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJsonStructure([
-            'data' => ['id', 'customer_email', 'customer_phone', 'status', 'subtotal_cents', 'gst_cents', 'total_cents', 'pickup_location_id', 'pickup_datetime', 'invoice_number', 'created_at', 'updated_at']
+            'data' => ['id', 'customer_email', 'customer_phone', 'status', 'subtotal_cents', 'gst_cents', 'total_cents', 'location_id', 'pickup_at', 'invoice_number', 'created_at', 'updated_at']
         ]);
 
         $this->assertDatabaseHas('orders', [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'status' => 'pending',
         ]);
@@ -59,10 +73,11 @@ class OrderControllerTest extends TestCase
     public function test_create_order_calculates_gst_correctly()
     {
         $orderData = [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
-            'pickup_location_id' => 1,
-            'pickup_datetime' => '2026-01-18T14:00:00+08:00',
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
@@ -89,10 +104,11 @@ class OrderControllerTest extends TestCase
         $this->products[0]->save();
 
         $orderData = [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
-            'pickup_location_id' => 1,
-            'pickup_datetime' => '2026-01-18T14:00:00+08:00',
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
@@ -133,22 +149,14 @@ class OrderControllerTest extends TestCase
         $product->stock_quantity = 5;
         $product->save();
 
-        // Create 5 orders with 1 item each (consumes all stock)
-        Order::factory()->count(5)->create([
-            'items' => json_encode([[
-                'product_id' => $product->id,
-                'quantity' => 1,
-                'unit_price_cents' => 1350,
-            ]]),
-            'status' => 'confirmed',
-        ]);
 
         // Try to create 6th order - should fail
         $orderData = [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
-            'pickup_location_id' => 1,
-            'pickup_datetime' => '2026-01-18T14:00:00+08:00',
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
             'items' => [
                 [
                     'product_id' => $product->id,
@@ -176,8 +184,8 @@ class OrderControllerTest extends TestCase
             $orderData = [
                 'customer_email' => "customer$i@example.com",
                 'customer_phone' => '+65 81234567',
-                'pickup_location_id' => 1,
-                'pickup_datetime' => '2026-01-18T14:00:00+08:00',
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
                 'items' => [
                     [
                         'product_id' => $product->id,
@@ -208,10 +216,11 @@ class OrderControllerTest extends TestCase
         $initialStock = $product->stock_quantity;
 
         $orderData = [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
-            'pickup_location_id' => 1,
-            'pickup_datetime' => '2026-01-18T14:00:00+08:00',
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
             'items' => [
                 [
                     'product_id' => $product->id,
@@ -258,10 +267,11 @@ class OrderControllerTest extends TestCase
     public function test_pdpa_consent_recorded_with_order()
     {
         $orderData = [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
-            'pickup_location_id' => 1,
-            'pickup_datetime' => '2026-01-18T14:00:00+08:00',
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
@@ -289,10 +299,11 @@ class OrderControllerTest extends TestCase
     public function test_invoice_number_generation_format()
     {
         $orderData = [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
-            'pickup_location_id' => 1,
-            'pickup_datetime' => '2026-01-18T14:00:00+08:00',
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
@@ -312,13 +323,14 @@ class OrderControllerTest extends TestCase
         $this->assertStringContainsString('2026', $invoiceNumber);
     }
 
-    public function test_pickup_datetime_validation_against_operating_hours()
+    public function test_pickup_at_validation_against_operating_hours()
     {
         $orderData = [
+            'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
-            'pickup_location_id' => 1,
-            'pickup_datetime' => '2026-01-19T23:00:00+08:00', // Outside operating hours (7am-10pm)
+            'location_id' => $this->location->id,
+            'pickup_at' => '2026-01-19T23:00:00+08:00', // Outside operating hours (7am-10pm)
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
@@ -331,6 +343,6 @@ class OrderControllerTest extends TestCase
         $response = $this->postJson('/api/v1/orders', $orderData);
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['pickup_datetime' => 'Location is closed at this time']);
+        $response->assertJsonFragment(['pickup_at' => 'Location is closed at this time']);
     }
 }
