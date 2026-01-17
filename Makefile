@@ -175,10 +175,84 @@ clean-frontend: ## Remove frontend build artifacts
 	@rm -rf frontend/out
 	@echo "✅ Frontend artifacts removed"
 
-clean-all: ## Remove all temporary files and containers
+	clean-all: ## Remove all temporary files and containers
 	@echo "🧹 Removing all temporary files and containers..."
 	@$(MAKE) clean-backend
 	@$(MAKE) clean-frontend
 	@docker-compose down -v
 	@rm -rf .docker-data/
 	@echo "✅ All temporary files and containers removed"
+
+validate-infrastructure: ## Validate Phase 0 infrastructure is healthy
+	@echo "🔍 Validating infrastructure health..."
+	@echo "1. Checking PostgreSQL..."
+	@docker-compose exec postgres pg_isready -U brew_user -d morning_brew || (echo "❌ PostgreSQL is not ready" && exit 1)
+	@echo "✅ PostgreSQL is healthy"
+	@echo "2. Checking Redis..."
+	@docker-compose exec redis redis-cli ping | grep -q "PONG" || (echo "❌ Redis is not responding" && exit 1)
+	@echo "✅ Redis is healthy"
+	@echo "3. Checking Backend connectivity to PostgreSQL..."
+	@docker-compose exec backend php artisan migrate:status >/dev/null 2>&1 || (echo "❌ Backend cannot connect to PostgreSQL" && exit 1)
+	@echo "✅ Backend ↔ PostgreSQL connection OK"
+	@echo "4. Checking Backend connectivity to Redis..."
+	@docker-compose exec backend php artisan cache:clear >/dev/null 2>&1 || (echo "❌ Backend cannot connect to Redis" && exit 1)
+	@echo "✅ Backend ↔ Redis connection OK"
+	@echo "5. Checking Frontend..."
+	@docker-compose exec frontend sh -c "curl -f http://localhost:3000 >/dev/null 2>&1" || (echo "❌ Frontend is not accessible" && exit 1)
+	@echo "✅ Frontend is serving"
+	@echo ""
+	@echo "✅ All infrastructure validation passed!"
+
+validate-phase-0: ## Complete Phase 0 validation gate
+	@echo "🚦 Running Phase 0 validation gate..."
+	@echo "1. Verifying PostgreSQL containers..."
+	@docker-compose ps postgres | grep -q "Up" || (echo "❌ PostgreSQL container is not running" && exit 1)
+	@echo "✅ PostgreSQL container running"
+	@echo "2. Verifying Redis containers..."
+	@docker-compose ps redis | grep -q "Up" || (echo "❌ Redis container is not running" && exit 1)
+	@echo "✅ Redis container running"
+	@echo "3. Verifying Backend containers..."
+	@docker-compose ps backend | grep -q "Up" || (echo "❌ Backend container is not running" && exit 1)
+	@echo "✅ Backend container running"
+	@echo "4. Verifying Frontend containers..."
+	@docker-compose ps frontend | grep -q "Up" || (echo "❌ Frontend container is not running" && exit 1)
+	@echo "✅ Frontend container running"
+	@echo "5. Verifying network connectivity..."
+	@docker-compose exec backend sh -c "nc -z postgres 5432" || (echo "❌ Backend cannot reach PostgreSQL" && exit 1)
+	@docker-compose exec backend sh -c "nc -z redis 6379" || (echo "❌ Backend cannot reach Redis" && exit 1)
+	@echo "✅ Network connectivity verified"
+	@echo "6. Verifying volume persistence..."
+	@docker-compose exec postgres sh -c "test -d /var/lib/postgresql/data" || (echo "❌ PostgreSQL data volume not mounted" && exit 1)
+	@docker-compose exec redis sh -c "test -d /data" || (echo "❌ Redis data volume not mounted" && exit 1)
+	@echo "✅ Volume persistence verified"
+	@echo ""
+	@echo "✅✅✅ Phase 0 validation PASSED - Infrastructure ready for Phase 4"
+
+validate-phase-4: ## Run Phase 4 validation test suite
+	@echo "🧪 Running Phase 4 API validation tests..."
+	@docker-compose exec backend php artisan test --filter=ProductControllerTest
+	@docker-compose exec backend php artisan test --filter=OrderControllerTest
+	@docker-compose exec backend php artisan test --filter=LocationControllerTest
+	@docker-compose exec backend php artisan test --filter=PdpaConsentControllerTest
+	@echo ""
+	@echo "TypeScript compilation check..."
+	@cd frontend && npx tsc --noEmit
+	@echo ""
+	@echo "GST calculation verification..."
+	@docker-compose exec backend php artisan test --filter=GstCalculationTest
+	@echo ""
+	@echo "Inventory reservation verification..."
+	@docker-compose exec backend php artisan test --filter=InventoryServiceTest
+	@echo ""
+	@echo "PDPA compliance verification..."
+	@docker-compose exec backend php artisan test --filter=PdpaServiceTest
+	@echo ""
+	@echo "✅ Phase 4 validation completed"
+
+validate-all: ## Run all validation gates
+	@echo "🔒 Running all validation gates..."
+	@$(MAKE) validate-infrastructure
+	@$(MAKE) migrate-fresh
+	@$(MAKE) validate-phase-4
+	@echo ""
+	@echo "✅✅✅ ALL VALIDATIONS PASSED - Ready for Phase 5"
