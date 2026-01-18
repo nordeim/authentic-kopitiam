@@ -12,7 +12,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-if (Schema::hasTable('payments')) {            return;        }
         Schema::create('payments', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
             $table->foreignUuid('order_id')->constrained()->cascadeOnDelete();

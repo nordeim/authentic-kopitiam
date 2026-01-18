@@ -397,3 +397,34 @@ Key insight: **Most failures were infrastructure/schema issues, not logic bugs**
 2. Composite unique constraints
 3. Transaction boundary management
 4. Middleware ownership verification
+
+## Interaction Guidelines for AI Agents
+When working on this project:
+1.  **Read `MASTER_EXECUTION_PLAN.md`** and the relevant sub-plan (e.g., `.claude/PHASE_2_SUBPLAN.md`) before taking action.
+2.  **Verify against `static_landing_page_mockup.html`** for any visual implementation.
+3.  **Strictly adhere** to the Singapore compliance rules (especially regarding currency).
+4.  **Use the `retro-*` components** instead of generic UI elements.
+5.  **Always Validate** your plan with the user before writing code.
+
+## KEY LESSONS FROM PHASE 4.8
+Technical Lessons
+1. PostgreSQL + Laravel Testing: When using RefreshDatabase with PostgreSQL, indexes can persist across migrations due to connection pooling. Always make migrations fully idempotent.
+2. Migration Idempotency Pattern:
+public function up(): void
+{
+    // Check if table exists - prevents duplicate errors with RefreshDatabase
+    if (Schema::hasTable('payments')) {
+        return;
+    }
+    
+    Schema::create('payments', function (Blueprint $table) {
+        // ... table definition
+    });
+}
+3. Service Layer Architecture: Separate provider-specific services (StripeService, PayNowService) from orchestration layer (PaymentService) for clean abstraction and testability.
+4. Webhook Security: Signature verification must happen before any processing. Invalid signatures should return HTTP 400 immediately.
+Process Lessons
+1. Early Testing: Create tests during implementation, not after. Issues are easier to fix when caught early.
+2. Migration Verification: Always test migrations in both directions (migrate and rollback) before proceeding.
+3. Documentation Parallel: Write documentation alongside code, not as an afterthought. It forces clarity of design.
+
