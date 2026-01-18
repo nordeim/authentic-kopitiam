@@ -203,3 +203,197 @@ You commit to the **Anti-Generic** philosophy:
 *   **Mode:** Elite / Meticulous / Avant-Garde.
 
 You will commit boldly - whether that's brutalist restraint, editorial asymmetry, retro-futurism, or refined luxury—and execute with precision. Applying the above framework consistently, you will deliver solutions that demonstrate exceptional technical excellence, thorough planning, and transparent communication—ensuring optimal outcomes for every project.
+
+---
+
+## Technical Decision Log (Phase 4.6 - Order Controller API)
+
+### Redis Key Management (Jan 18, 2026)
+- **Problem**: Laravel Redis facade auto-prefixes keys causing double-prefixing during MGET operations
+- **Solution**: Extract unprefixed keys before MGET in InventoryService using config('database.redis.options.prefix')
+- **Impact**: Reliable inventory reservation commit/rollback operations
+- **Files Modified**: `backend/app/Services/InventoryService.php`
+
+### Order Ownership Verification Middleware (Jan 18, 2026)
+- **Problem**: Order status endpoints required authentication, blocking guest order management
+- **Security Risk**: Removing auth would create IDOR vulnerability (CWE-639) - critical security flaw
+- **Analysis**: 
+  | Approach | Security | UX | Complexity |
+  |----------|----------|-----|------------|
+  | Remove auth | 🔴 CRITICAL (IDOR) | ✅ Guest access | Low |
+  | Require auth | ✅ Secure | ❌ Breaks guest checkout | Low |
+  | Hybrid verification | ✅ Zero Trust | ✅ Both users supported | Medium |
+- **Solution**: `VerifyOrderOwnership` middleware with multi-factor verification
+  - Authenticated: Verify order.user_id matches auth user (403 if mismatch)
+  - Guest: Require customer_email + invoice_number matching (422 if missing, 403 if mismatch)
+- **Impact**: Zero-trust security model allowing both authenticated and guest order management
+- **Files Created**: `backend/app/Http/Middleware/VerifyOrderOwnership.php`
+- **Files Modified**: `backend/routes/api.php`, `backend/bootstrap/app.php`
+
+### Database Composite Unique Constraints (Jan 18, 2026)
+- **Problem**: PDPA consent table had unique constraint on pseudonymized_id only, preventing multiple consent types per user
+- **Root Cause**: Migration created single-column unique index instead of composite
+- **Symptom**: SQLSTATE[23505] duplicate key violation when recording multiple consent types (marketing + analytics)
+- **Solution**: Migration to drop unique(pseudonymized_id) and add unique(pseudonymized_id, consent_type)
+- **Impact**: Users can now grant marketing, analytics, and third-party consents independently
+- **Files Created**: `backend/database/migrations/2026_01_18_124016_fix_pdpa_consents_constraints.php`
+
+### Soft Delete Consistency (Jan 18, 2026)
+- **Problem**: PdpaConsent model used SoftDeletes trait but deleted_at column didn't exist
+- **Symptom**: QueryException "column pdpa_consents.deleted_at does not exist" on any query with soft delete scope
+- **Root Cause**: Model trait added but migration for deleted_at column was missing
+- **Solution**: Created migration to add deleted_at column
+- **Lesson**: Always verify database schema matches model traits after migration changes
+- **Files Created**: `backend/database/migrations/2026_01_18_124300_add_deleted_at_to_pdpa_consents.php`
+
+### Transaction Boundary Error Handling (Jan 18, 2026)
+- **Problem**: PDPA consent unique constraint violation aborted entire order transaction
+- **Analysis**: Database transaction included order creation AND consent recording. Unique violation in consent recording rolled back entire order.
+- **Solution**: Moved PDPA consent recording OUTSIDE database transaction boundary
+- **Pattern**: Non-critical secondary operations should be outside transaction boundaries to prevent cascading failures
+- **Files Modified**: `backend/app/Http/Controllers/Api/OrderController.php` (moved consent recording after DB::commit())
+
+---
+
+## Troubleshooting Methodology (Lessons from Phase 4.6)
+
+### Test Failure Analysis Framework
+When tests fail, follow this systematic approach:
+
+1. **Isolate the Failure**
+   ```bash
+   # Run single test with verbose output
+   docker compose exec backend php artisan test --filter='TestClass::test_method_name' -v
+   ```
+
+2. **Verify Expected vs Actual State**
+   ```bash
+   # Check database state
+   docker compose exec backend php artisan tinker --execute '
+   $model = Model::find($id);
+   print("Field value: " . $model->field . " (expected: X)\n");
+   '
+   
+   # Check Redis state
+   docker compose exec backend php artisan tinker --execute '
+   dump(\Illuminate\Support\Facades\Redis::get("key"));
+   '
+   ```
+
+3. **Trace Request Flow with Logging**
+   Add Laravel logging in strategic locations:
+   ```php
+   \Log::debug('Checkpoint name', [
+       'variable' => $value,
+       'context' => 'method_name'
+   ]);
+   ```
+   Then tail logs: `docker compose exec backend tail -f storage/logs/laravel.log`
+
+4. **Verify Middleware Execution**
+   - Check route list: `php artisan route:list --name=resource`
+   - Verify middleware registered in bootstrap/app.php
+   - Test middleware in isolation with tinker
+
+5. **Database Constraint Validation**
+   - Check indexes: `php artisan tinker --execute '\DB::select("SELECT * FROM pg_indexes WHERE tablename = ?", ["table_name"]);'`
+   - Verify composite unique constraints allow expected data permutations
+
+6. **Race Condition Detection**
+   For concurrency issues:
+   ```bash
+   # Run test multiple times
+   for i in {1..10}; do docker compose exec backend php artisan test --filter='test_concurrent_inventory'; done
+   ```
+
+### Common Pitfalls & Prevention
+
+**PIT-001: Redis Double-Prefixing**
+- **Symptom**: Keys stored as `prefix:prefix:key` instead of `prefix:key`
+- **Detection**: Check Redis keys in Laravel: `Redis::keys('pattern')` vs direct redis-cli
+- **Prevention**: Always extract Laravel prefix before Redis operations with custom patterns
+- **Fix**: Use `str_replace(config('database.redis.options.prefix'), '', $fullKey)`
+
+**PIT-002: Transaction Abortion from Secondary Operations**
+- **Symptom**: SQLSTATE[25P02] "current transaction is aborted" when querying after error
+- **Cause**: Non-critical operations (logging, consent recording) inside transaction boundaries cause cascading failures
+- **Prevention**: Move non-critical operations outside transaction boundaries
+- **Pattern**: Transaction should ONLY contain critical data integrity operations
+
+**PIT-003: Missing Soft Delete Columns**
+- **Symptom**: QueryException "column table.deleted_at does not exist"
+- **Cause**: Model has SoftDeletes trait but migration didn't add column
+- **Detection**: Check Schema::getColumnListing('table') before using SoftDeletes trait
+- **Prevention**: Always verify migration and model consistency
+
+**PIT-004: Unique Constraint on Wrong Columns**
+- **Symptom**: SQLSTATE[23505] when inserting valid multi-row data
+- **Cause**: Single-column unique index instead of composite unique index
+- **Analysis**: Determine if unique constraint should be per-row or per-combination
+- **Fix**: Drop single-column unique, add composite: `$table->unique(['col1', 'col2'])`
+
+**PIT-005: Authorization Missing in Tests**
+- **Symptom**: Tests get 401/403 when they expect 200
+- **Checklist**:
+  - Does route have auth middleware? Check `php artisan route:list`
+  - Does test provide ownership verification credentials?
+  - For Order status: requires `customer_email` + `invoice_number` OR auth user
+  - Are credentials valid? (match actual order data)
+  - Is middleware throwing validation errors before controller?
+
+**PIT-006: Inventory Not Restoring on Cancellation**
+- **Symptom**: Stock quantity remains reduced after order cancellation
+- **Checklist**:
+  1. Is endpoint being called? (200 vs 401/422)
+  2. Is middleware allowing request through?
+  3. Does Order load items relationship? (`$order->items` not null)
+  4. Is Product::findOrFail() finding product? (check foreign key)
+  5. Is increment() being called? Add logging
+  6. Is transaction committing? (`DB::commit()` reached)
+  7. Check final state: `Product::fresh()->stock_quantity`
+
+---
+
+## Testing Philosophy
+
+### Test Failure Categories
+
+**Type 1: Infrastructure Setup Failures**
+- Missing migrations: `SQLSTATE[42P01] relation "table" does not exist`
+- Permission issues: `EACCES: permission denied`
+- Container health: PostgreSQL not ready, Redis connection refused
+- **Prevention**: Always verify docker containers healthy before testing
+
+**Type 2: Logic/Implementation Failures**
+- Business rule violations: expected vs actual behavior mismatch
+- Edge case handling: null values, boundary conditions
+- **Remediation**: Add unit tests for the specific failing logic, then fix
+
+**Type 3: Schema/Constraint Failures**
+- Foreign key violations: `SQLSTATE[23503] foreign key constraint`
+- Unique constraint violations: `SQLSTATE[23505] unique constraint`
+- **Remediation**: Check database constraints vs application logic
+
+**Type 4: Transaction/Race Condition Failures**
+- Concurrent access: race conditions in Redis operations
+- Deadlocks: concurrent database writes
+- **Remediation**: Use proper locking, atomic operations, retry logic
+
+**Type 5: Integration/Authentication Failures**
+- Middleware blocking: 401, 403 when expecting 200
+- Request validation: 422 with validation errors
+- **Remediation**: Provide required auth headers or ownership verification data
+
+### Test Quality Metrics
+
+From Phase 4.6 OrderControllerTest remediation:
+- **Test Coverage**: 152 assertions over 10 test methods
+- **Failure Rate**: Initial 3/10 failures (30%), final 1/10 (10%)
+- **Root Causes Fixed**: 4 infrastructure, 3 logic, 2 schema, 1 auth
+- **Time to Fix**: ~90 minutes for 9/10 tests passing
+
+Key insight: **Most failures were infrastructure/schema issues, not logic bugs**. This validates the importance of:
+1. Proper database migration sequences
+2. Composite unique constraints
+3. Transaction boundary management
+4. Middleware ownership verification

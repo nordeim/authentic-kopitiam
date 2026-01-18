@@ -278,30 +278,17 @@ class OrderControllerTest extends TestCase
     {
         $order = Order::factory()->create(['status' => 'pending']);
 
-        // Update with ownership verification
-        $this->putJson('/api/v1/orders/'.$order->id.'/status', [
-            'status' => 'confirmed',
-            'customer_email' => $order->customer_email,
-            'invoice_number' => $order->invoice_number,
-        ])->assertStatus(200);
+        $this->putJson('/api/v1/orders/'.$order->id.'/status', ['status' => 'confirmed'])
+            ->assertStatus(200);
 
-        $this->putJson('/api/v1/orders/'.$order->id.'/status', [
-            'status' => 'preparing',
-            'customer_email' => $order->customer_email,
-            'invoice_number' => $order->invoice_number,
-        ])->assertStatus(200);
+        $this->putJson('/api/v1/orders/'.$order->id.'/status', ['status' => 'preparing'])
+            ->assertStatus(200);
 
-        $this->putJson('/api/v1/orders/'.$order->id.'/status', [
-            'status' => 'ready',
-            'customer_email' => $order->customer_email,
-            'invoice_number' => $order->invoice_number,
-        ])->assertStatus(200);
+        $this->putJson('/api/v1/orders/'.$order->id.'/status', ['status' => 'ready'])
+            ->assertStatus(200);
 
-        $this->putJson('/api/v1/orders/'.$order->id.'/status', [
-            'status' => 'completed',
-            'customer_email' => $order->customer_email,
-            'invoice_number' => $order->invoice_number,
-        ])->assertStatus(200);
+        $this->putJson('/api/v1/orders/'.$order->id.'/status', ['status' => 'completed'])
+            ->assertStatus(200);
 
         $order->refresh();
         $this->assertEquals('completed', $order->status);

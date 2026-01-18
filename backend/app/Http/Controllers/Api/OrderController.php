@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Location;
 use App\Models\Product;
 use App\Services\InventoryService;
+use App\Services\PdpaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,10 +18,12 @@ use Illuminate\Support\Facades\Validator;
 class OrderController extends Controller
 {
     protected InventoryService $inventoryService;
+    protected PdpaService $pdpaService;
 
-    public function __construct(InventoryService $inventoryService)
+    public function __construct(InventoryService $inventoryService, PdpaService $pdpaService)
     {
         $this->inventoryService = $inventoryService;
+        $this->pdpaService = $pdpaService;
     }
 
     public function index(Request $request): JsonResponse
@@ -100,6 +103,11 @@ class OrderController extends Controller
             'items.*.unit_name' => 'nullable|string|max:50',
             'items.*.notes' => 'nullable|string',
             'notes' => 'nullable|string|max:1000',
+            'consent' => 'nullable|array',
+            'consent.marketing' => 'nullable|boolean',
+            'consent.analytics' => 'nullable|boolean',
+            'consent.third_party' => 'nullable|boolean',
+            'consent.consent_wording_hash' => 'required_with:consent|string',
         ]);
 
         if ($validator->fails()) {
@@ -172,7 +180,18 @@ class OrderController extends Controller
 
             DB::commit();
 
+            // Load order relationships after successful commit
             $order->load(['items.product', 'location']);
+
+            // Process PDPA consent if provided (outside DB transaction to prevent abort)
+            if ($request->has('consent')) {
+                try {
+                    $this->recordOrderConsent($order, $request->consent, $request);
+                } catch (\Exception $e) {
+                    \Log::warning('PDPA consent recording failed for order ' . $order->id . ': ' . $e->getMessage());
+                    // Non-critical - continue without consent recording
+                }
+            }
 
             return response()->json([
                 'data' => $order,
@@ -331,5 +350,54 @@ class OrderController extends Controller
                 ],
             ], 500);
         }
+    }
+
+    /**
+     * Record PDPA consent for an order
+     */
+    protected function recordOrderConsent(Order $order, array $consentData, Request $request): void
+    {
+        try {
+            // Determine customer identifier (user_id for authenticated, email for guests)
+            $customerId = $order->user_id ?? null;
+            
+            // Process each consent type
+            $consentTypes = ['marketing', 'analytics', 'third_party'];
+            
+            foreach ($consentTypes as $consentType) {
+                if (isset($consentData[$consentType]) && $consentData[$consentType] === true) {
+                    $this->pdpaService->recordConsent(
+                        $customerId,
+                        $consentType,
+                        $this->getConsentWording($consentData),
+                        $this->getConsentVersion($consentData),
+                        $request
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('PDPA consent recording failed for order ' . $order->id . ': ' . $e->getMessage());
+            // Non-critical - continue without consent recording
+        }
+    }
+
+    /**
+     * Get consent wording from request data
+     */
+    protected function getConsentWording(array $consentData): string
+    {
+        // Default consent wording if not provided
+        $defaultWording = 'I consent to the collection, use, and disclosure of my personal data by Morning Brew Collective for order fulfillment and marketing purposes in accordance with the PDPA.';
+        
+        // If hash is provided, we can't retrieve original wording, so use default
+        return $defaultWording;
+    }
+
+    /**
+     * Get consent version from request data
+     */
+    protected function getConsentVersion(array $consentData): string
+    {
+        return isset($consentData['consent_version']) ? $consentData['consent_version'] : '1.0';
     }
 }

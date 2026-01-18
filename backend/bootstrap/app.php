@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'order.ownership' => \App\Http\Middleware\VerifyOrderOwnership::class,
         ]);
 
         // Trust proxies for correct URL generation behind Nginx/Load Balancer

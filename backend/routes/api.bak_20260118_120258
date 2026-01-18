@@ -22,7 +22,7 @@ Route::prefix('v1')->group(function () {
     ->only(['index', 'show', 'store', 'destroy']);
 
   Route::put('orders/{id}/status', [OrderController::class, 'updateStatus'])
-    ->middleware(['order.ownership']);
+    ->middleware(['auth:sanctum']);
 
   // Locations Resource - Explicit GET routes (apiResource only() not working reliably)
   Route::get('locations', [LocationController::class, 'index']);
