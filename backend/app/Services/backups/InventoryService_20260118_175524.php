@@ -330,44 +330,4 @@ class InventoryService
     {
         return "inventory:reserved:{$productId}";
     }
-
-    /**
-     * Restore inventory for cancelled/refunded order
-     * @param \App\Models\Order $order
-     * @return void
-     * @throws \Exception
-     */
-    public function restoreInventoryForCancelledOrder($order): void
-    {
-        if (!$order) {
-            throw new \Exception("Order is required for inventory restoration");
-        }
-        
-        // Load order items relationship if not already loaded
-        if (!$order->relationLoaded('items')) {
-            $order->load('items');
-        }
-        
-        foreach ($order->items as $item) {
-            try {
-                $product = \App\Models\Product::findOrFail($item->product_id);
-                $product->increment('stock_quantity', $item->quantity);
-                
-                \Illuminate\Support\Facades\Log::info('Inventory restored for cancelled/refunded order', [
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'quantity_restored' => $item->quantity,
-                    'new_stock_quantity' => $product->fresh()->stock_quantity,
-                ]);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to restore inventory for product', [
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id ?? 'unknown',
-                    'error' => $e->getMessage(),
-                ]);
-                // Don't throw exception to allow other items to be processed
-                continue;
-            }
-        }
-    }
 }

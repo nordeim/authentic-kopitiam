@@ -52,16 +52,6 @@ Route::prefix('v1')->group(function () {
     ]);
   });
 
-
-    // Payments Resource
-    Route::post('payments/{order}/paynow', [PaymentController::class, 'createPayNowPayment']);
-    Route::post('payments/{order}/stripe', [PaymentController::class, 'createStripePayment']);
-    Route::get('payments/{payment}', [PaymentController::class, 'show']);
-    Route::post('payments/{payment}/refund', [PaymentController::class, 'refund']);
-
-    // Webhooks
-    Route::post('webhooks/stripe', [WebhookController::class, 'stripe']);
-    Route::post('webhooks/paynow', [WebhookController::class, 'paynow']);
 })->middleware(['throttle:api', 'cors']);
 
 // Legacy routes (for backward compatibility)
