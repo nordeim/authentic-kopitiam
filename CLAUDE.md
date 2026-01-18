@@ -171,3 +171,28 @@ Process Lessons
 2. Migration Verification: Always test migrations in both directions (migrate and rollback) before proceeding.
 3. Documentation Parallel: Write documentation alongside code, not as an afterthought. It forces clarity of design.
 
+---
+
+---
+💡 KEY TECHNICAL DECISIONS FROM PHASE 4.8
+Decision 1: Provider-Specific Service Pattern
+Chosen: Separate StripeService and PayNowService from PaymentService orchestrator
+Rationale: Clean abstraction allows mocking in tests, independent provider upgrades, clear separation of concerns
+Impact: Easy to add new payment providers (e.g., GrabPay, PayPal) by creating new Service classes
+Decision 2: Webhook-Driven Status Updates
+Chosen: Order status updates only via webhooks, not API polling
+Rationale: Accurate, real-time status reflects actual payment provider state; prevents race conditions
+Implementation: WebhookController → PaymentService → order.update('status' => 'processing')
+Decision 3: Soft Deletes for Payments
+Chosen: Added SoftDeletes trait to Payment model
+Rationale: Regulatory compliance requires retaining payment records for 7 years (Singapore regulations)
+Implementation: Uses deleted_at column, no actual data deletion
+Decision 4: Inventory Restoration on Refund
+Chosen: Optional inventory restoration via restore_inventory parameter
+Rationale: Some refunds shouldn't restore inventory (e.g., hygiene products, custom orders)
+Implementation: PaymentService checks flag, calls InventoryService method
+Decision 5: Amount Validation in Service Layer
+Chosen: Validate payment amount matches order total in PaymentService, not controller
+Rationale: Prevents mismatched payments at business logic level, reusable across controllers
+Implementation: if ($order->total_amount !== $amount) throw Exception
+
