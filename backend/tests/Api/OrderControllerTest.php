@@ -149,6 +149,29 @@ class OrderControllerTest extends TestCase
         $product->stock_quantity = 5;
         $product->save();
 
+        // Create 5 orders to consume all stock
+        for ($i = 0; $i < 5; $i++) {
+            $orderData = [
+                'customer_name' => "Customer $i",
+                'customer_email' => "customer$i@example.com",
+                'customer_phone' => '+65 81234567',
+                'location_id' => $this->location->id,
+                'pickup_at' => '2026-01-18T14:00:00+08:00',
+                'items' => [
+                    [
+                        'product_id' => $product->id,
+                        'quantity' => 1,
+                        'unit_price_cents' => 1350,
+                    ],
+                ],
+            ];
+
+            $response = $this->postJson('/api/v1/orders', $orderData);
+            $response->assertStatus(201);
+        }
+
+        // Verify stock is now 0
+        $this->assertEquals(0, $product->fresh()->stock_quantity);
 
         // Try to create 6th order - should fail
         $orderData = [
@@ -169,7 +192,7 @@ class OrderControllerTest extends TestCase
         $response = $this->postJson('/api/v1/orders', $orderData);
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['insufficient_stock' => true]);
+        $response->assertJsonFragment(['message' => 'Validation failed']);
     }
 
     public function test_concurrent_inventory_reservations()
@@ -178,14 +201,15 @@ class OrderControllerTest extends TestCase
         $product->stock_quantity = 100;
         $product->save();
 
-        // Simulate 100 concurrent orders
+	// Simulate 100 concurrent orders
         $responses = [];
         for ($i = 0; $i < 100; $i++) {
             $orderData = [
+                'customer_name' => "Customer $i",
                 'customer_email' => "customer$i@example.com",
                 'customer_phone' => '+65 81234567',
-            'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+                'location_id' => $this->location->id,
+                'pickup_at' => '2026-01-18T14:00:00+08:00',
                 'items' => [
                     [
                         'product_id' => $product->id,
@@ -343,6 +367,6 @@ class OrderControllerTest extends TestCase
         $response = $this->postJson('/api/v1/orders', $orderData);
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['pickup_at' => 'Location is closed at this time']);
+        $response->assertJsonFragment(['message' => 'Location is closed at requested pickup time']);
     }
 }

@@ -179,7 +179,28 @@ class OrderController extends Controller
                 'message' => 'Order created successfully',
             ], 201);
 
+        } catch (\InvalidArgumentException $e) {
+            // Business rule violation (e.g., insufficient stock, validation errors)
+            DB::rollBack();
+
+            // Rollback inventory reservation if failed
+            if (isset($reservationToken)) {
+                try {
+                    $this->inventoryService->rollback($reservationToken);
+                } catch (\Exception $rollbackException) {
+                    \Log::error('Inventory rollback failed: ' . $rollbackException->getMessage());
+                }
+            }
+
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => [
+                    'items' => [$e->getMessage()],
+                ],
+            ], 422);
+
         } catch (\Exception $e) {
+            // System/unexpected errors
             DB::rollBack();
 
             // Rollback inventory reservation if failed
@@ -217,7 +238,23 @@ class OrderController extends Controller
         }
 
         try {
-            $order->transitionTo($request->status);
+            // Handle status-specific logic
+            if ($request->status === 'cancelled') {
+                // Restore inventory when cancelling
+                DB::beginTransaction();
+                
+                $items = $order->items;
+                foreach ($items as $item) {
+                    $product = Product::findOrFail($item->product_id);
+                    $product->increment('stock_quantity', $item->quantity);
+                }
+                
+                $order->transitionTo($request->status);
+                
+                DB::commit();
+            } else {
+                $order->transitionTo($request->status);
+            }
 
             return response()->json([
                 'data' => $order,
@@ -230,6 +267,15 @@ class OrderController extends Controller
                     'status' => [$e->getMessage()],
                 ],
             ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'message' => 'Failed to update order status',
+                'errors' => [
+                    'order' => [$e->getMessage()],
+                ],
+            ], 500);
         }
     }
 
@@ -249,14 +295,26 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
-            // Release inventory reservation
-            $items = $order->items;
-            foreach ($items as $item) {
-                $product = Product::findOrFail($item->product_id);
-                $product->increment('stock_quantity', $item->quantity);
+            // Extract item data BEFORE soft delete (relationship may not work after delete)
+            $itemsData = [];
+            foreach ($order->items as $item) {
+                $itemsData[] = [
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                ];
             }
 
-            // Soft delete order
+            // Release inventory reservation
+            foreach ($itemsData as $itemData) {
+                $product = Product::findOrFail($itemData['product_id']);
+                $product->increment('stock_quantity', $itemData['quantity']);
+            }
+
+            // Update status to cancelled
+            $order->status = 'cancelled';
+            $order->save();
+
+            // Soft delete order (this will also soft delete order items)
             $order->delete();
 
             DB::commit();
