@@ -22,12 +22,13 @@ class PdpaService
     }
 
     /**
-     * Record consent
+     * Record consent with renewal logic
      * @param string|null $customerId Customer UUID (null = anonymous)
      * @param string $consentType Consent type
      * @param string $wording Consent text
      * @param string $version Consent version
      * @param Request $request HTTP request for IP/user agent
+     * @return PdpaConsent Consent record (new or renewed)
      */
     public function recordConsent(
         ?string $customerId,
@@ -40,6 +41,32 @@ class PdpaService
         $consentWordingHash = $this->hashConsentWording($wording);
         $expiresAt = $this->calculateExpirationDate();
 
+        // Find existing active consent
+        $existingConsent = $this->findActiveConsent($pseudonymizedId, $consentType);
+
+        if ($existingConsent) {
+            // Wording changed? Update with new version
+            if (!$this->isWordingSame($existingConsent->consent_wording_hash, $consentWordingHash)) {
+                $existingConsent->update([
+                    'consent_wording_hash' => $consentWordingHash,
+                    'consent_version' => $version,
+                    'user_agent' => substr($request->userAgent() ?? '', 0, 500),
+                    'ip_address' => $request->ip(),
+                ]);
+            }
+            
+            // Renew existing consent (update timestamp and expiry)
+            $existingConsent->update([
+                'consent_status' => 'granted',
+                'consented_at' => now(),
+                'withdrawn_at' => null,
+                'expires_at' => $expiresAt,
+            ]);
+
+            return $existingConsent;
+        }
+
+        // Create new consent record
         $consent = PdpaConsent::create([
             'customer_id' => $customerId,
             'pseudonymized_id' => $pseudonymizedId,
@@ -55,6 +82,60 @@ class PdpaService
         ]);
 
         return $consent;
+    }
+
+    /**
+     * Record multiple consents for same customer
+     * @param string|null $customerId Customer UUID
+     * @param array $consents Array of consent objects with type/wording/version
+     * @param Request $request HTTP request
+     * @return array Array of consent records created
+     */
+    public function recordConsents(?string $customerId, array $consents, Request $request): array
+    {
+        $uniqueConsents = collect($consents)->unique('type')->values();
+        $results = [];
+
+        foreach ($uniqueConsents as $consentData) {
+            $results[] = $this->recordConsent(
+                $customerId,
+                $consentData['type'],
+                $consentData['wording'],
+                $consentData['version'],
+                $request
+            );
+        }
+
+        return $results;
+    }
+
+    /**
+     * Find active consent for customer
+     * @param string $pseudonymizedId Pseudonymized customer ID
+     * @param string $consentType Consent type
+     * @return PdpaConsent|null Active consent or null
+     */
+    protected function findActiveConsent(string $pseudonymizedId, string $consentType): ?PdpaConsent
+    {
+        return PdpaConsent::where('pseudonymized_id', $pseudonymizedId)
+            ->where('consent_type', $consentType)
+            ->where('consent_status', 'granted')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->first();
+    }
+
+    /**
+     * Check if consent wording unchanged
+     * @param string|null $existingHash Existing hash
+     * @param string $newHash New hash
+     * @return bool True if same wording
+     */
+    protected function isWordingSame(?string $existingHash, string $newHash): bool
+    {
+        return !empty($existingHash) && $existingHash === $newHash;
     }
 
     /**

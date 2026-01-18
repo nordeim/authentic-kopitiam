@@ -10,7 +10,6 @@ use App\Models\Category;
 use App\Models\PdpaConsent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class OrderControllerTest extends TestCase
@@ -29,6 +28,8 @@ class OrderControllerTest extends TestCase
 
         $this->location = Location::factory()->create([
             'name' => 'Test Kopitiam',
+            'opens_at' => '08:00',
+            'closes_at' => '22:00',
         ]);
 
         $category = Category::factory()->create(['name' => 'Beverages']);
@@ -49,6 +50,12 @@ class OrderControllerTest extends TestCase
                 'image_url' => 'https://example.com/teh.jpg',
             ]),
         ];
+
+        $this->user = User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
+        ]);
     }
 
     public function test_create_order_with_valid_data()
@@ -389,7 +396,7 @@ class OrderControllerTest extends TestCase
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T17:35:05+08:00',
+            'pickup_at' => '2026-01-18T14:00:00+08:00',
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,

@@ -104,10 +104,9 @@ class OrderController extends Controller
             'items.*.notes' => 'nullable|string',
             'notes' => 'nullable|string|max:1000',
             'consent' => 'nullable|array',
-            'consent.marketing' => 'nullable|boolean',
-            'consent.analytics' => 'nullable|boolean',
-            'consent.third_party' => 'nullable|boolean',
-            'consent.consent_wording_hash' => 'required_with:consent|string',
+            'consent.*.type' => 'required|string|in:marketing,analytics,third_party',
+            'consent.*.wording' => 'required|string|max:500',
+            'consent.*.version' => 'required|string|max:20',
         ]);
 
         if ($validator->fails()) {
@@ -184,8 +183,13 @@ class OrderController extends Controller
             $order->load(['items.product', 'location']);
 
             // Process PDPA consent if provided (outside DB transaction to prevent abort)
-            if ($request->has('consent')) {
+            if ($request->has('consent') && !empty($request->consent)) {
                 try {
+                    \Log::debug('Recording consent after transaction', [
+                        'order_id' => $order->id,
+                        'customer_id' => $order->user_id ?? 'guest',
+                        'consent_count' => count($request->consent)
+                    ]);
                     $this->recordOrderConsent($order, $request->consent, $request);
                 } catch (\Exception $e) {
                     \Log::warning('PDPA consent recording failed for order ' . $order->id . ': ' . $e->getMessage());
@@ -256,95 +260,80 @@ class OrderController extends Controller
             ], 422);
         }
 
-        try {
-            // Handle status-specific logic
-            if ($request->status === 'cancelled') {
-                // Restore inventory when cancelling
-                DB::beginTransaction();
-                
-                $items = $order->items;
-                foreach ($items as $item) {
-                    $product = Product::findOrFail($item->product_id);
-                    $product->increment('stock_quantity', $item->quantity);
-                }
-                
-                $order->transitionTo($request->status);
-                
-                DB::commit();
-            } else {
-                $order->transitionTo($request->status);
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
+
+        $order->status = $newStatus;
+        $order->save();
+
+        // If order is cancelled, release inventory
+        if ($newStatus == 'cancelled') {
+            // Find the order items and increase product stock
+            $orderItems = $order->items()->with('product')->get();
+
+            foreach ($orderItems as $orderItem) {
+                $product = $orderItem->product;
+                $product->increment('stock_quantity', $orderItem->quantity);
             }
 
-            return response()->json([
-                'data' => $order,
-                'message' => 'Order status updated successfully',
-            ]);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json([
-                'message' => 'Invalid status transition',
-                'errors' => [
-                    'status' => [$e->getMessage()],
-                ],
-            ], 422);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return response()->json([
-                'message' => 'Failed to update order status',
-                'errors' => [
-                    'order' => [$e->getMessage()],
-                ],
-            ], 500);
+            \Log::info('Inventory released for cancelled order', ['order_id' => $id, 'items_count' => $orderItems->count()]);
         }
+
+        \Log::info('Order status updated', [
+            'order_id' => $id,
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+        ]);
+
+        return response()->json([
+            'data' => $order,
+            'message' => 'Order status updated',
+        ]);
     }
 
     public function destroy(string $id): JsonResponse
     {
-        $order = Order::findOrFail($id);
+        $order = Order::with(['items', 'payment'])->findOrFail($id);
 
-        if ($order->status === 'completed') {
+        // Check if order can be deleted (only pending orders can be deleted)
+        if ($order->status !== 'pending') {
             return response()->json([
-                'message' => 'Cannot cancel completed order',
+                'message' => 'Only pending orders can be deleted',
                 'errors' => [
-                    'order' => ['Cannot cancel completed orders'],
+                    'order' => ['Order status must be pending'],
                 ],
             ], 422);
         }
 
         try {
-            DB::beginTransaction();
-
-            // Extract item data BEFORE soft delete (relationship may not work after delete)
-            $itemsData = [];
-            foreach ($order->items as $item) {
-                $itemsData[] = [
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                ];
+            // Release inventory for each order item
+            foreach ($order->items as $orderItem) {
+                $product = $orderItem->product;
+                $product->increment('stock_quantity', $orderItem->quantity);
             }
 
-            // Release inventory reservation
-            foreach ($itemsData as $itemData) {
-                $product = Product::findOrFail($itemData['product_id']);
-                $product->increment('stock_quantity', $itemData['quantity']);
+            // Delete payment if exists
+            if ($order->payment) {
+                $order->payment->delete();
             }
 
-            // Update status to cancelled
-            $order->status = 'cancelled';
-            $order->save();
+            // Delete order items
+            $order->items()->delete();
 
-            // Soft delete order (this will also soft delete order items)
+            // Delete order
             $order->delete();
 
-            DB::commit();
-
-            return response()->json(null, 204);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
+            \Log::info('Order deleted and inventory released', ['order_id' => $id]);
 
             return response()->json([
-                'message' => 'Failed to cancel order',
+                'message' => 'Order deleted successfully',
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to delete order', ['order_id' => $id, 'error' => $e->getMessage()]);
+
+            return response()->json([
+                'message' => 'Failed to delete order',
                 'errors' => [
                     'order' => [$e->getMessage()],
                 ],
@@ -352,50 +341,52 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * Record PDPA consent for an order
-     */
-    protected function recordOrderConsent(Order $order, array $consentData, Request $request): void
+    protected function recordOrderConsent(Order $order, array $consents, Request $request): void
     {
         try {
             // Determine customer identifier (user_id for authenticated, email for guests)
             $customerId = $order->user_id ?? null;
-            
-            // Process each consent type
-            $consentTypes = ['marketing', 'analytics', 'third_party'];
-            
-            foreach ($consentTypes as $consentType) {
-                if (isset($consentData[$consentType]) && $consentData[$consentType] === true) {
-                    $this->pdpaService->recordConsent(
-                        $customerId,
-                        $consentType,
-                        $this->getConsentWording($consentData),
-                        $this->getConsentVersion($consentData),
-                        $request
-                    );
+
+            \Log::debug('Processing consents', [
+                'order_id' => $order->id,
+                'customer_id' => $customerId,
+                'customer_email' => $order->customer_email,
+                'consent_count' => count($consents)
+            ]);
+
+            // Record all consents using new array structure
+            foreach ($consents as $consentData) {
+                if (!isset($consentData['type']) || !isset($consentData['wording']) || !isset($consentData['version'])) {
+                    \Log::warning('Invalid consent structure', ['data' => $consentData]);
+                    continue;
                 }
+
+                $this->pdpaService->recordConsent(
+                    $customerId,
+                    $consentData['type'],
+                    $consentData['wording'],
+                    $consentData['version'],
+                    $request
+                );
             }
+
+            \Log::info('PDPA consent recorded successfully', ['order_id' => $order->id]);
+
         } catch (\Exception $e) {
             \Log::warning('PDPA consent recording failed for order ' . $order->id . ': ' . $e->getMessage());
             // Non-critical - continue without consent recording
         }
     }
 
-    /**
-     * Get consent wording from request data
-     */
     protected function getConsentWording(array $consentData): string
     {
         // Default consent wording if not provided
         $defaultWording = 'I consent to the collection, use, and disclosure of my personal data by Morning Brew Collective for order fulfillment and marketing purposes in accordance with the PDPA.';
-        
+
         // If hash is provided, we can't retrieve original wording, so use default
         return $defaultWording;
     }
 
-    /**
-     * Get consent version from request data
-     */
     protected function getConsentVersion(array $consentData): string
     {
         return isset($consentData['consent_version']) ? $consentData['consent_version'] : '1.0';
