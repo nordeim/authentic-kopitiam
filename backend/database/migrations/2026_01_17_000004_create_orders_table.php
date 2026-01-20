@@ -20,9 +20,9 @@ return new class extends Migration
             $table->uuid('location_id');
             $table->timestamp('pickup_at');
             $table->enum('status', ['pending', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'])->default('pending');
-            $table->integer('subtotal_cents')->unsigned();
-            $table->integer('gst_cents')->unsigned(); // 9% GST stored separately
-            $table->integer('total_cents')->unsigned();
+            $table->decimal('subtotal', 10, 4)->unsigned();
+            $table->decimal('gst_amount', 10, 4)->unsigned(); // 9% GST with high precision
+            $table->decimal('total_amount', 10, 4)->unsigned();
             $table->enum('payment_method', ['paynow', 'card', 'cash']);
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
             $table->text('notes')->nullable();

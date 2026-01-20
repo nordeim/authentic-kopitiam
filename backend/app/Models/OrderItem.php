@@ -29,14 +29,14 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
-        'unit_price_cents',
+        'unit_price',
         'quantity',
         'unit_name',
         'notes',
     ];
 
     protected $casts = [
-        'unit_price_cents' => 'integer',
+        'unit_price' => 'decimal:4',
         'quantity' => 'integer',
     ];
 
@@ -50,14 +50,14 @@ class OrderItem extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function getSubtotalCentsAttribute(): int
+    public function getSubtotalAttribute(): float
     {
-        return $this->unit_price_cents * $this->quantity;
+        return $this->unit_price * $this->quantity;
     }
 
     public function getFormattedSubtotalAttribute(): string
     {
-        $subtotal = $this->subtotal_cents / 100;
+        $subtotal = $this->subtotal;
         return '$' . number_format($subtotal, 2);
     }
 }

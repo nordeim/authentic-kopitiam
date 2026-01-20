@@ -25,9 +25,9 @@ class Order extends Model
         'location_id',
         'pickup_at',
         'status',
-        'subtotal_cents',
-        'gst_cents',
-        'total_cents',
+        'subtotal',
+        'gst_amount',
+        'total_amount',
         'payment_method',
         'payment_status',
         'notes',
@@ -36,9 +36,9 @@ class Order extends Model
 
     protected $casts = [
         'pickup_at' => 'datetime',
-        'subtotal_cents' => 'integer',
-        'gst_cents' => 'integer',
-        'total_cents' => 'integer',
+        'subtotal' => 'decimal:4',
+        'gst_amount' => 'decimal:4',
+        'total_amount' => 'decimal:4',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -95,31 +95,16 @@ class Order extends Model
 
     public function calculateTotal(): void
     {
-        $subtotalCents = $this->items->sum(function ($item) {
-            return $item->unit_price_cents * $item->quantity;
+        $subtotal = $this->items->sum(function ($item) {
+            return $item->unit_price * $item->quantity;
         });
-
-        $gstCents = (int) round($subtotalCents * 0.09); // 9% GST rate
-        $totalCents = $subtotalCents + $gstCents;
-
-        $this->subtotal_cents = $subtotalCents;
-        $this->gst_cents = $gstCents;
-        $this->total_cents = $totalCents;
-    }
-
-    public function getSubtotalAttribute(): float
-    {
-        return $this->subtotal_cents / 100;
-    }
-
-    public function getGstAttribute(): float
-    {
-        return $this->gst_cents / 100;
-    }
-
-    public function getTotalAttribute(): float
-    {
-        return $this->total_cents / 100;
+        
+        $gstAmount = round($subtotal * 0.09, 4);
+        $totalAmount = round($subtotal + $gstAmount, 4);
+        
+        $this->subtotal = $subtotal;
+        $this->gst_amount = $gstAmount;
+        $this->total_amount = $totalAmount;
     }
 
     public function getFormattedTotalAttribute(): string

@@ -12,7 +12,7 @@ export interface Payment {
   order_id: string;
   payment_method: PaymentMethod;
   status: PaymentStatus;
-  amount: string; // DECIMAL(10,4) from backend
+  amount: number; // DECIMAL(10,4) from backend
   paynow_qr_data?: string;
   provider_payment_id?: string;
   created_at: string;

@@ -232,7 +232,7 @@ function StripeFormContent({ orderId, amount, onSuccess, onError }: StripeFormCo
             <div>
               <div className="text-[rgb(107,90,74)]">GST (9%)</div>
               <div className="font-semibold text-[rgb(61,35,23)]">
-                S${(amount * 0.09).toFixed(2)}
+                S${(amount - (amount / 1.09)).toFixed(2)}
               </div>
             </div>
             <div>

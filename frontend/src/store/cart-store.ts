@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { decimal } from '@/lib/decimal-utils';
 
 export interface CartItem {
   id: string;
@@ -62,10 +63,10 @@ export const useCartStore = create<CartState>()(
 
           if (existingItem) {
             newItems = state.items.map((i) =>
-              i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+              i.id === item.id ? { ...i, quantity: i.quantity + (item.quantity || 1) } : i
             );
           } else {
-            newItems = [...state.items, { ...item, quantity: 1 }];
+            newItems = [...state.items, { ...item, quantity: item.quantity || 1 }];
           }
 
           return {
@@ -192,14 +193,20 @@ export const useCartStore = create<CartState>()(
           };
         }),
 
-      getSubtotal: () => get().items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      getSubtotal: () => {
+        return get().items.reduce((sum, item) => {
+          return decimal.add(sum, decimal.multiply(item.price, item.quantity));
+        }, 0);
+      },
 
       getGST: () => {
         const subtotal = get().getSubtotal();
-        return Math.round(subtotal * 0.09 * 10000) / 10000;
+        return decimal.calculateGST(subtotal);
       },
 
-      getTotal: () => get().getSubtotal() + get().getGST(),
+      getTotal: () => {
+        return decimal.add(get().getSubtotal(), get().getGST());
+      },
 
       getItemCount: () => get().items.reduce((sum, item) => sum + item.quantity, 0),
     }),

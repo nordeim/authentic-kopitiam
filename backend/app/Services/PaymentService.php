@@ -119,10 +119,8 @@ class PaymentService
 
         DB::beginTransaction();
         try {
-            $amountInCents = (int) round($amount * 100);
-
             $stripeData = $this->stripeService->createPaymentIntent(
-                $amountInCents,
+                $amount,  // ✅ DECIMAL(10,4) → Stripe converts internally
                 'SGD',
                 [
                     'order_id' => $order->id,
@@ -187,11 +185,14 @@ class PaymentService
             $refundData = null;
 
             if ($payment->payment_provider === 'stripe' && $payment->provider_payment_id) {
-                $amountInCents = (int) round($amount * 100);
-                $refundData = $this->stripeService->processRefund(
+                $stripeRefundData = $this->stripeService->processRefund(
                     $payment->provider_payment_id,
-                    $amountInCents,
-                    $reason
+                    $amount,  // ✅ DECIMAL(10,4) → Stripe converts internally
+                    $reason,
+                    [
+                        'order_id' => $payment->order_id,
+                        'refund_id' => $refund->id,
+                    ]
                 );
             } elseif ($payment->payment_provider === 'paynow') {
                 Log::info('PayNow refund initiated - manual processing required', [
