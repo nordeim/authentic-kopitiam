@@ -5,19 +5,28 @@
  */
 
 import * as React from 'react';
-import { toast } from '@/components/ui/toast-notification';
+import {
+  RetroDialog,
+  RetroDialogContent,
+  RetroDialogHeader,
+  RetroDialogTitle,
+  RetroDialogDescription,
+} from '@/components/ui/retro-dialog';
+import { RetroButton } from '@/components/ui/retro-button';
 
 export interface FallbackOptions {
   onRetry: () => void;
   onBackToCart: () => void;
   onContactSupport: () => void;
+  orderId?: string;
 }
 
 // Offline Mode Component - when payment services are completely unavailable
 export function OfflineModeFallback({ 
   onRetry, 
   onBackToCart, 
-  onContactSupport 
+  onContactSupport,
+  orderId
 }: FallbackOptions) {
   return (
     <div className="max-w-2xl mx-auto space-y-6 text-center py-16">
@@ -42,32 +51,37 @@ export function OfflineModeFallback({
       </div>
 
       <div className="space-y-3 max-w-md mx-auto">
-        <button
+        <RetroButton
           onClick={onRetry}
-          className="w-full py-3 px-4 rounded-full font-bold font-['Fraunces'] bg-[rgb(229,215,195)] text-[rgb(61,35,23)] hover:bg-[rgb(255,107,74)] hover:text-white transition-colors"
+          variant="secondary"
+          className="w-full"
         >
           Retry Connection
-        </button>
+        </RetroButton>
 
-        <button
+        <RetroButton
           onClick={onBackToCart}
-          className="w-full py-3 px-4 rounded-full font-bold font-['Fraunces'] bg-[rgb(255,190,79)] text-white hover:bg-[rgb(230,170,60)] transition-colors"
+          variant="primary"
+          className="w-full"
         >
           Back to Cart
-        </button>
+        </RetroButton>
 
-        <button
+        <RetroButton
           onClick={onContactSupport}
-          className="w-full py-3 px-4 rounded-full font-bold font-['Fraunces'] border-2 border-[rgb(229,215,195)] text-[rgb(61,35,23)] hover:border-[rgb(255,107,74)] hover:text-[rgb(255,107,74)] transition-colors"
+          variant="outline"
+          className="w-full"
         >
           Contact Support
-        </button>
+        </RetroButton>
       </div>
 
       <div className="text-center text-sm text-[rgb(107,90,74)] mt-6">
-        <p className="mb-2">
-          <strong>Saved Order:</strong> #{orderId}
-        </p>
+        {orderId && (
+          <p className="mb-2">
+            <strong>Saved Order:</strong> #{orderId}
+          </p>
+        )}
         <p>
           Your cart items are preserved for 30 days
         </p>
@@ -121,19 +135,21 @@ export function PaymentMethodUnavailableFallback({
       </div>
 
       <div className="space-y-3 max-w-md mx-auto">
-        <button
+        <RetroButton
           onClick={onTryOtherMethod}
-          className="w-full py-3 px-4 rounded-full font-bold font-['Fraunces'] bg-[rgb(255,107,74)] text-white hover:bg-[rgb(230,90,60)] transition-colors"
+          variant="primary"
+          className="w-full"
         >
           Try Other Payment Method
-        </button>
+        </RetroButton>
 
-        <button
+        <RetroButton
           onClick={onBackToCart}
-          className="w-full py-3 px-4 rounded-full font-bold font-['Fraunces'] border-2 border-[rgb(229,215,195)] text-[rgb(61,35,23)] hover:border-[rgb(255,107,74)] hover:text-[rgb(255,107,74)] transition-colors"
+          variant="outline"
+          className="w-full"
         >
           Back to Cart
-        </button>
+        </RetroButton>
       </div>
 
       <div className="text-center text-sm text-[rgb(107,90,74)] mt-6">
@@ -164,16 +180,16 @@ export function PaymentRetryModal({
   const progress = (attempt / maxAttempts) * 100;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white border-4 border-[rgb(61,35,23)] rounded-2xl p-6">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold font-['Fraunces'] text-[rgb(61,35,23)] mb-2">
+    <RetroDialog open={open} onOpenChange={onOpenChange}>
+      <RetroDialogContent className="max-w-md bg-white border-4 border-[rgb(61,35,23)] rounded-2xl p-6">
+        <RetroDialogHeader>
+          <RetroDialogTitle className="text-xl font-bold font-['Fraunces'] text-[rgb(61,35,23)] mb-2">
             Retrying Payment
-          </DialogTitle>
-          <DialogDescription className="text-[rgb(107,90,74)]">
+          </RetroDialogTitle>
+          <RetroDialogDescription className="text-[rgb(107,90,74)]">
             Attempt {attempt} of {maxAttempts}
-          </DialogDescription>
-        </DialogHeader>
+          </RetroDialogDescription>
+        </RetroDialogHeader>
 
         <div className="space-y-4">
           <div className="w-full h-2 bg-[rgb(229,215,195)] rounded-full">
@@ -190,27 +206,27 @@ export function PaymentRetryModal({
           </div>
 
           <div className="flex gap-2">
-            <Button
+            <RetroButton
               onClick={onStopRetry}
               variant="secondary"
               className="flex-1"
             >
               Stop & Cancel
-            </Button>
+            </RetroButton>
             
             {attempt >= maxAttempts - 1 && (
-              <Button
+              <RetroButton
                 onClick={onContactSupport}
                 variant="primary"
                 className="flex-1"
               >
                 Contact Support
-              </Button>
+              </RetroButton>
             )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </RetroDialogContent>
+    </RetroDialog>
   );
 }
 

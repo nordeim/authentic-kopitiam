@@ -123,7 +123,7 @@ export function PaymentStatusTracker({
       {/* Content */}
       <div className="flex-1">
         <h3 className={cn(
-          'font-bold text-lg font-['Fraunces']',
+          "font-bold text-lg font-['Fraunces']",
           state === 'active' && 'text-[rgb(255,107,74)]',
           state === 'completed' && 'text-[rgb(16,163,74)]',
           state === 'failed' && 'text-[rgb(220,38,38)]',

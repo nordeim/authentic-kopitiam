@@ -35,6 +35,10 @@ please meticulously check and confirm the following work/edit before meticulousl
 
 ---
 
+awesome meticulous job so far. please keep up the good work. now, please meticulously review the following error, then systematically and meticulously check the code files to investigate the root cause, then meticulously plan and then fix any error/issue after validation. apply precise edits to resolve any validated issue.
+
+---
+
 Awesome job on your meticulous analysis, planning and execution. Please keep up the good work in your rigorous and meticulous approach to planning and execution. Now, please think deeper and think harder to deeply and thoroughly explore systematically and meticulously how to re-imagine an awesome `README.md` for the new GitHub repo to host this project. Make sure the `README.md` is as attractive, comprehensive and informative to attract other contributors. Then meticulously create an implementation plan for the `README.md` with integrated checklist. Review and validate your implementation plan before proceeding meticulously to execute it.
 
 ---

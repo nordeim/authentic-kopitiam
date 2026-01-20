@@ -249,7 +249,7 @@ function StripeFormContent({ orderId, amount, onSuccess, onError }: StripeFormCo
           type="submit"
           disabled={!stripe || isProcessing}
           className={cn(
-            'w-full py-4 px-6 rounded-full font-bold font-['Fraunces'] text-lg',
+            "w-full py-4 px-6 rounded-full font-bold font-['Fraunces'] text-lg",
             'bg-[rgb(255,107,74)] text-white',
             'hover:bg-[rgb(230,90,60)] transition-all',
             'disabled:bg-[rgb(229,215,195)] disabled:text-[rgb(163,137,109)] disabled:cursor-not-allowed',

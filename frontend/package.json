@@ -17,6 +17,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3",
     "@radix-ui/react-accordion": "^1",
     "@radix-ui/react-avatar": "^1",

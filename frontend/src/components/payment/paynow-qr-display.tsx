@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react';
-import { DownloadIcon, ShareIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, ShareIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { usePaymentStore } from '@/store/payment-store';
 import { toast } from '@/components/ui/toast-notification';
 import { cn } from '@/lib/utils';
@@ -261,7 +261,7 @@ export function PayNowQRDisplay({
 
         {/* Action Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Button onClick={handleDownload} variant="secondary" icon={<DownloadIcon />}>
+          <Button onClick={handleDownload} variant="secondary" icon={<ArrowDownTrayIcon />}>
             Save QR
           </Button>
 
@@ -320,8 +320,7 @@ function Button({ onClick, icon, variant = 'secondary', disabled, children }: Bu
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'w-full py-3 px-4 rounded-full font-bold font-['Fraunces'] text-sm',
-        'transition-all cursor-pointer',
+                  "w-full py-3 px-4 rounded-full font-bold font-['Fraunces'] text-sm",        'transition-all cursor-pointer',
         'flex items-center justify-center gap-2',
         variant === 'primary' &&
           'bg-[rgb(255,107,74)] text-white hover:bg-[rgb(230,90,60)]',

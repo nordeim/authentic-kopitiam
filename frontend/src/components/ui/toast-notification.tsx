@@ -10,6 +10,14 @@ export interface ToastProps {
   onDismiss: () => void;
 }
 
+export const toast = (props: { title: string; description?: string; variant?: 'success' | 'info' | 'warning' }) => {
+  useToastStore.getState().showToast({
+    message: props.description ? `${props.title}: ${props.description}` : props.title,
+    variant: props.variant || 'success',
+    onDismiss: () => {},
+  });
+};
+
 export function Toast({
   message,
   variant = 'success',

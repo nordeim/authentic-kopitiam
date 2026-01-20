@@ -1,8 +1,8 @@
 'use client'
 
 import * as React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/retro-dialog';
-import { Button } from '@/components/ui/retro-button';
+import { RetroDialog, RetroDialogContent, RetroDialogHeader, RetroDialogTitle, RetroDialogDescription } from '@/components/ui/retro-dialog';
+import { RetroButton } from '@/components/ui/retro-button';
 import { usePaymentStore } from '@/store/payment-store';
 import { toast } from '@/components/ui/toast-notification';
 import { cn } from '@/lib/utils';
@@ -66,23 +66,23 @@ export function PaymentRecoveryModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-white border-4 border-[rgb(61,35,23)] rounded-2xl p-8">
-        <DialogHeader>
+    <RetroDialog open={open} onOpenChange={onOpenChange}>
+      <RetroDialogContent className="max-w-2xl bg-white border-4 border-[rgb(61,35,23)] rounded-2xl p-8">
+        <RetroDialogHeader>
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 rounded-full bg-[rgb(255,190,79)] flex items-center justify-center">
               <DocumentDuplicateIcon className="w-8 h-8 text-white" />
             </div>
             <div>
-              <DialogTitle className="text-3xl font-bold font-['Fraunces'] text-[rgb(61,35,23)]">
+              <RetroDialogTitle className="text-3xl font-bold font-['Fraunces'] text-[rgb(61,35,23)]">
                 Continue Previous Payment?
-              </DialogTitle>
-              <DialogDescription className="text-[rgb(107,90,74)] mt-2">
+              </RetroDialogTitle>
+              <RetroDialogDescription className="text-[rgb(107,90,74)] mt-2">
                 We found an incomplete payment for this order. You can resume it or start fresh.
-              </DialogDescription>
+              </RetroDialogDescription>
             </div>
           </div>
-        </DialogHeader>
+        </RetroDialogHeader>
 
         <div className="space-y-6">
           {/* Previous Payment Details */}
@@ -105,7 +105,7 @@ export function PaymentRecoveryModal({
                 <div>
                   <div className="text-[rgb(107,90,74)]">Amount</div>
                   <div className="font-medium text-[rgb(61,35,23)]">
-                    S${parseFloat(payment.amount).toFixed(2)}
+                    S${payment.amount.toFixed(2)}
                   </div>
                 </div>
                 <div>
@@ -120,7 +120,7 @@ export function PaymentRecoveryModal({
 
           {/* Options */}
           <div className="space-y-3">
-            <Button
+            <RetroButton
               onClick={handleResumePayment}
               variant="primary"
               size="lg"
@@ -131,9 +131,9 @@ export function PaymentRecoveryModal({
               <span className="ml-auto text-xs opacity-75">
                 (Recommended)
               </span>
-            </Button>
+            </RetroButton>
 
-            <Button
+            <RetroButton
               onClick={handleStartNewPayment}
               variant="secondary"
               size="lg"
@@ -141,10 +141,10 @@ export function PaymentRecoveryModal({
             >
               <CreditCardIcon className="w-5 h-5 mr-2" />
               Start New Payment Session
-            </Button>
+            </RetroButton>
 
             {payment?.payment_method === 'paynow' && (
-              <Button
+              <RetroButton
                 onClick={() => {
                   // Regenerate QR
                   window.location.href = `/checkout/payment?orderId=${orderId}&method=paynow&regenerate=true`;
@@ -155,7 +155,7 @@ export function PaymentRecoveryModal({
               >
                 <QrCodeIcon className="w-5 h-5 mr-2" />
                 Generate New PayNow QR
-              </Button>
+              </RetroButton>
             )}
           </div>
 
@@ -169,26 +169,26 @@ export function PaymentRecoveryModal({
 
         {/* Footer */}
         <div className="flex justify-between mt-8 pt-4 border-t border-[rgb(229,215,195)]">
-          <Button
+          <RetroButton
             variant="secondary"
             className="flex items-center gap-2"
             onClick={handleContactSupport}
           >
             <EnvelopeIcon className="w-4 h-4" />
             Contact Support
-          </Button>
+          </RetroButton>
 
           <div className="flex gap-2">
-            <Button
+            <RetroButton
               variant="secondary"
               onClick={() => onOpenChange(false)}
             >
               Cancel
-            </Button>
+            </RetroButton>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </RetroDialogContent>
+    </RetroDialog>
   );
 }
 

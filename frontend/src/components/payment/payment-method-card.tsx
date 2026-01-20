@@ -89,8 +89,8 @@ export function PaymentMethodCard({
         <div className="flex-1">
           <h3
             className={cn(
-              'text-lg font-bold font-['Fraunces'] text-[rgb(61,35,23)]',
-              selected && 'text-[rgb(255,107,74)]'
+              "text-lg font-bold font-['Fraunces'] text-[rgb(61,35,23)]",
+              selected && 'text-white'
             )}
           >
             {title}

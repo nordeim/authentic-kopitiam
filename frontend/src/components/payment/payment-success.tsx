@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react';
-import { CheckCircleIcon, ShareIcon, MapPinIcon, ClockIcon, ReceiptIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ShareIcon, MapPinIcon, ClockIcon, ReceiptPercentIcon } from '@heroicons/react/24/outline';
 import { useCartStore } from '@/store/cart-store';
 import { cn } from '@/lib/utils';
 
@@ -180,7 +180,7 @@ export function PaymentSuccess({
             onClick={handleOrderAgain}
             className="w-full py-3 px-4 rounded-full font-bold font-['Fraunces'] text-sm bg-[rgb(255,190,79)] text-white hover:bg-[rgb(230,170,60)] transition-colors flex items-center justify-center gap-2"
           >
-            <ReceiptIcon className="w-5 h-5" />
+            <ReceiptPercentIcon className="w-5 h-5" />
             Order Again
           </button>
         </div>
@@ -189,7 +189,7 @@ export function PaymentSuccess({
       {/* Receipt Note */}
       <div className="text-center p-6 bg-[rgb(255,245,230)] rounded-lg">
         <div className="flex items-center justify-center gap-3">
-          <ReceiptIcon className="w-6 h-6 text-[rgb(107,90,74)]" />
+          <ReceiptPercentIcon className="w-6 h-6 text-[rgb(107,90,74)]" />
           <div>
             <p className="font-semibold text-[rgb(61,35,23)]">
               Email Receipt Sent

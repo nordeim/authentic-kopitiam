@@ -13,7 +13,7 @@ import { LoaderIcon } from '@/components/ui/loader-icon';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 
 // Icons
-import { ReceiptIcon, MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { ReceiptPercentIcon, MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 export default function OrderConfirmationPage() {
   const searchParams = useSearchParams();
@@ -268,7 +268,7 @@ export default function OrderConfirmationPage() {
               onClick={handleTrackOrder}
               className="py-3 px-6 rounded-full font-bold font-['Fraunces'] bg-[rgb(255,107,74)] text-white hover:bg-[rgb(230,90,60)] transition-colors flex items-center gap-2"
             >
-              <ReceiptIcon className="w-5 h-5" />
+              <ReceiptPercentIcon className="w-5 h-5" />
               View Receipt
             </button>
 
@@ -277,7 +277,7 @@ export default function OrderConfirmationPage() {
                 onClick={() => window.location.href = '/menu'}
                 className="py-3 px-6 rounded-full font-bold font-['Fraunces'] bg-[rgb(255,190,79)] text-white hover:bg-[rgb(230,170,60)] transition-colors flex items-center gap-2"
               >
-                <ReceiptIcon className="w-5 h-5" />
+                <ReceiptPercentIcon className="w-5 h-5" />
                 Order Again
               </button>
             )}

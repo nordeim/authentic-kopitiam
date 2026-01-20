@@ -157,10 +157,9 @@ export function PaymentMethodSelector({
           onClick={handleContinue}
           disabled={!selectedMethod || isCheckingAvailability}
           className={cn(
-            'flex-1 py-3 px-6 rounded-full font-bold font-['Fraunces']',
-            'bg-[rgb(255,107,74)] text-white',
-            'hover:bg-[rgb(230,90,60)] transition-colors',
-            'disabled:bg-[rgb(229,215,195)] disabled:text-[rgb(163,137,109)] disabled:cursor-not-allowed'
+            "flex-1 py-3 px-6 rounded-full font-bold font-['Fraunces']",
+            "bg-[rgb(229,215,195)] text-[rgb(163,137,109)] hover:bg-[rgb(255,107,74)] hover:text-white transition-all",
+            "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
         >
           Continue to Payment
