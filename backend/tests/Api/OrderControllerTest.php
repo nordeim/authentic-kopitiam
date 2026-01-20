@@ -415,8 +415,6 @@ class OrderControllerTest extends TestCase
 
     public function test_pdpa_consent_recorded_with_order()
     {
-        \Log::info('Starting PDPA consent test');
-
         $orderData = [
             'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
@@ -444,11 +442,6 @@ class OrderControllerTest extends TestCase
             ],
         ];
 
-        \Log::debug('Sending order request with consent', [
-            'order_data' => $orderData,
-            'consent_count' => count($orderData['consent'])
-        ]);
-
         $response = $this->withServerVariables(['REMOTE_ADDR' => '127.0.0.1'])
                          ->postJson('/api/v1/orders', $orderData);
 
@@ -456,8 +449,6 @@ class OrderControllerTest extends TestCase
 
         // Verify consents recorded
         $pseudonymizedId = app(PdpaService::class)->pseudonymize('customer@example.com');
-
-        \Log::debug('Checking consents in database', ['pseudonymized_id' => $pseudonymizedId]);
 
         // Check marketing consent
         $this->assertDatabaseHas('pdpa_consents', [
@@ -481,8 +472,6 @@ class OrderControllerTest extends TestCase
         $this->assertNotNull($marketingConsent);
         $this->assertEquals(hash('sha256', 'I consent to marketing communications'), $marketingConsent->consent_wording_hash);
         $this->assertEquals('1.0', $marketingConsent->consent_version);
-
-        \Log::info('PDPA consent test completed successfully');
     }
 
     public function test_duplicate_consent_renews_existing_record()
