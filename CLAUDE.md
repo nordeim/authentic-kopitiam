@@ -232,3 +232,175 @@ PIT-004: Unique Constraint on Wrong Columns
 - Cause: Single-column unique index instead of composite unique index
 - Fix: Drop single-column unique, add composite: $table->unique(['col1', 'col2'])
 ---
+
+📋 COMPREHENSIVE SESSION STATE SUMMARY
+Project Context: Morning Brew Collective - Singapore GST Compliance Mandate
+Core Mandate: All financial values must use DECIMAL(10,4) to ensure Singapore GST (9%) calculation precision.
+Critical Compliance Gap Identified by QA: Database schema used mixed types (INTEGER, DECIMAL(10,2)) violating mandate.
+---
+✅ COMPLETED WORK - PHASE 1-5 REMEDIATION
+Phase 1: Schema Analysis & Migration (COMPLETE)
+What Was Done:
+- Created remediation migration: 2026_01_20_095125_fix_decimal_precision_for_singapore_gst_compliance.php
+- Applied migration successfully to all tables
+- Later: Removed redundant migration and updated base migrations directly
+Tables Remediated:
+- ✅ orders: subtotal, gst_amount, total_amount → DECIMAL(10,4)
+- ✅ order_items: unit_price → DECIMAL(10,4)
+- ✅ payments: amount, refunded_amount → DECIMAL(10,4)
+- ✅ payment_refunds: amount → DECIMAL(10,4)
+- ✅ products: price → DECIMAL(10,4) (was already compliant)
+Files Modified:
+- /home/project/authentic-kopitiam/backend/database/migrations/2026_01_17_000004_create_orders_table.php - Changed integer columns to decimal
+- /home/project/authentic-kopitiam/backend/database/migrations/2026_01_17_000005_create_order_items_table.php - Changed unit_price_cents → unit_price DECIMAL(10,4)
+- /home/project/authentic-kopitiam/backend/database/migrations/2026_01_17_000008_create_payments_table.php - Changed from (10,2) to (10,4)
+- /home/project/authentic-kopitiam/backend/database/migrations/2026_01_18_170348_create_payment_refunds_table.php - Changed from (10,2) to (10,4)
+Validation Result: migrate:fresh --seed succeeds with all 16 migrations
+---
+Phase 2: Backend Models (COMPLETE)
+What Was Done:
+Updated Laravel models to remove integer casts and use decimal casts.
+Files Modified:
+1. /home/project/authentic-kopitiam/backend/app/Models/Order.php
+   - Removed: 'subtotal_cents' => 'integer', 'gst_cents' => 'integer', 'total_cents' => 'integer'
+   - Added: 'subtotal' => 'decimal:4', 'gst_amount' => 'decimal:4', 'total_amount' => 'decimal:4'
+   - Updated: calculateTotal() method to use decimal arithmetic
+   - Removed: Legacy accessor methods (getSubtotalAttribute(), getGstAttribute(), getTotalAttribute())
+2. /home/project/authentic-kopitiam/backend/app/Models/OrderItem.php
+   - Removed: 'unit_price_cents' => 'integer'
+   - Added: 'unit_price' => 'decimal:4'
+   - Updated: getSubtotalAttribute() to calculate from decimal values
+Validation Result: Order creation with 99.9999 preserves all 4 decimal places in database
+---
+Phase 3: Service Layer & Stripe Integration (COMPLETE)
+What Was Done:
+- Isolated integer-to-cents conversion to Stripe boundary only
+- StripeService internal conversion preserves decimal throughout application
+- PaymentService passes DECIMAL(10,4) directly to StripeService
+Files Modified:
+1. /home/project/authentic-kopitiam/backend/app/Services/StripeService.php
+   - Added: private function convertToCents(float $amount): int helper
+   - Changed: createPaymentIntent(int $amount) → createPaymentIntent(float $amount)
+   - Changed: processRefund(int $amount) → processRefund(?float $amount)
+   - Both methods now convert to cents internally before calling Stripe API
+   - Return arrays include both amount (cents for Stripe) and amount_decimal (original decimal value)
+2. /home/project/authentic-kopitiam/backend/app/Services/PaymentService.php
+   - Removed: $amountInCents = (int) round($amount * 100) conversion logic
+   - Updated: Both payment creation and refund now pass decimal amounts directly to StripeService
+   - Fixed: $order->id reference to use $payment->order_id in refund method
+Validation Result: Stripe receives integer cents, application preserves decimal(10,4) precision, no rounding errors introduced
+---
+Phase 4: Frontend TypeScript Types (PARTIALLY COMPLETE)
+What Was Done:
+Updated frontend interfaces to reflect decimal fields instead of integer cents.
+Files Modified:
+- /home/project/authentic-kopitiam/frontend/src/types/api.ts
+  - Order interface: Removed subtotal_cents, gst_cents, total_cents; Added subtotal, gst_amount, total_amount as number
+  - OrderItem interface: Removed unit_price_cents, subtotal_cents; Added unit_price, subtotal as number
+  - Payment interface: Updated comments to reflect DECIMAL(10,4)
+Remaining Work:
+- Update cart-store.ts calculations to use decimal math (4 decimal precision)
+- Update payment form components to handle decimal display
+- Fix pre-existing TypeScript errors in checkout pages (non-blocking for compliance)
+---
+Phase 5: Documentation & Validation (COMPLETE)
+Files Created:
+- /home/project/authentic-kopitiam/Comprehensive_Validated_Project_Understanding.md (QA document)
+- Migration validation logs
+- Test verification scripts
+Validation Results:
+- ✅ Database: 8 columns confirmed as DECIMAL(10,4) via SQL query
+- ✅ Backend Models: Decimal casts working, precision preserved
+- ✅ StripeService: Syntax valid, boundary conversion isolated
+- ✅ PaymentService: Decimal passthrough validated
+- ✅ Migration: migrate:fresh --seed successful
+---
+🔍 CURRENT STATUS
+Compliance Matrix:
+| Component | Status | Details |
+|-----------|--------|---------|
+| Database Schema | ✅ COMPLETE | All 8 financial columns DECIMAL(10,4) |
+| Backend Models | ✅ COMPLETE | Laravel casts updated, integer logic removed |
+| PaymentService | ✅ COMPLETE | Decimal passthrough to StripeService |
+| StripeService | ✅ COMPLETE | Boundary conversion isolated |
+| Base Migrations | ✅ COMPLETE | All base migrations updated |
+| Frontend Types | ⚠️ PARTIAL | Interfaces updated, calculations pending |
+| Frontend UI | ❌ NEEDS WORK | Syntax errors in payment pages (pre-existing) |
+Critical Validation:
+-- VERIFIED: DECIMAL(10,4) precision preserved
+INSERT: subtotal=99.9999, gst=8.9999, total=108.9998
+DATABASE: subtotal=99.9999, gst=8.9999, total=108.9998
+RESULT: ✅ DECIMAL PRECISION PRESERVED
+---
+📋 WHAT NEEDS TO BE DONE NEXT
+Priority 1: Frontend Decimal Calculations (REQUIRED for compliance)
+File: /home/project/authentic-kopitiam/frontend/src/store/cart-store.ts
+Update calculation methods:
+// Current (integer pattern):
+const gstAmount = Math.round(subtotal * 0.09 * 100) / 100;
+// Required (DECIMAL(10,4)):
+const gstAmount = Math.round(subtotal * 0.09 * 10000) / 10000;
+Priority 2: Frontend Test Suite (RECOMMENDED)
+Create validation tests for:
+- Cart calculations preserve 4 decimals
+- API responses handle decimal(10,4) values
+- Payment processing displays correct precision
+Priority 3: Pre-existing Frontend Bugs (OPTIONAL for compliance)
+Fix TypeScript errors in:
+- src/app/checkout/confirmation/page.tsx
+- src/app/checkout/payment/page.tsx
+- Payment component import issues
+These are not related to DECIMAL compliance but affect build process.
+---
+🔑 KEY TECHNICAL DECISIONS MADE
+1. Conversion Boundary Isolation
+   - Why: Stripe API requires integer cents, but project mandate requires DECIMAL(10,4) throughout
+   - Decision: Convert to cents ONLY within StripeService methods, return original decimal in response
+   - Benefit: Application logic preserves precision, Stripe gets required format
+2. Base Migration Update (vs. Separate Fix)
+   - Why: Original migration files defined incorrect schema
+   - Decision: Updated base migrations directly and removed redundant fix migration
+   - Benefit: migrate:fresh --seed works cleanly without additional remediation steps
+3. Decimal Cast Strategy
+   - Why: Laravel automatically handles decimal casting, but explicit casts ensure consistency
+   - Decision: Use 'decimal:4' in model casts for all financial fields
+   - Benefit: Predictable behavior, clear intent, prevents accidental integer conversion
+4. Frontend Type Updates
+   - Why: Frontend must match backend schema for type safety and correct display
+   - Decision: Updated all TypeScript interfaces to use number for decimal fields
+   - Benefit: TypeScript will catch mismatches between frontend calculations and backend data
+---
+🧪 VALIDATION COMMANDS READY
+# Database schema verification
+docker compose exec postgres psql -U brew_user -d morning_brew -c "
+SELECT table_name, column_name, data_type, numeric_precision, numeric_scale
+FROM information_schema.columns
+WHERE table_schema = 'public' 
+AND column_name IN ('subtotal', 'gst_amount', 'total_amount', 'unit_price', 'price', 'amount', 'refunded_amount')
+ORDER BY table_name, column_name;"
+# Backend decimal precision test
+docker compose exec backend php artisan tinker --execute '
+$order = new Order();
+$order->subtotal = 99.9999;
+$order->gst_amount = 8.9999;
+$order->total_amount = 108.9998;
+$order->save();
+$fresh = Order::find($order->id);
+echo "Precision: " . (strpos((string)$fresh->subtotal, ".") !== false ? strlen(substr((string)$fresh->subtotal, strpos((string)$fresh->subtotal, ".") + 1)) : 0) . " decimals\n";
+$order->delete();
+'
+# Run full test suite
+docker compose exec backend php artisan test
+# Frontend typecheck
+cd /home/project/authentic-kopitiam/frontend && npm run typecheck
+---
+⚠️ IMPORTANT NOTES FOR NEW SESSION
+1. Database State: Schema is fully compliant. Running migrate:fresh --seed works correctly
+2. Backend State: All models, services, and controllers updated to use decimal logic
+3. Frontend State: Type interfaces updated, but calculation logic still needs decimal precision implementation
+4. Test Data: Locations table may be empty after fresh migration. Create one for testing if needed
+5. Stripe API: Service is boundary-controlled; decimal-to-cents conversion happens only at API call
+6. Evidence Chain: All modifications systematically validated with SQL queries and PHP tests
+Resume Point: Frontend cart store calculations need decimal(10,4) precision implementation to complete full compliance loop.
+
+

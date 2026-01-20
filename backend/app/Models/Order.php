@@ -138,20 +138,20 @@ class Order extends Model
 
     protected static function generateInvoiceNumber(): string
     {
-        $year = now()->format('Y');
-        $prefix = "INV-{$year}-";
+        $date = now()->format('Ymd');
+        $prefix = "MBC-{$date}-";
 
         $lastOrder = self::where('invoice_number', 'like', $prefix . '%')
             ->orderBy('invoice_number', 'desc')
             ->first();
 
         if ($lastOrder) {
-            $lastNumber = (int) str_replace($prefix, '', $lastOrder->invoice_number);
+            $lastNumber = (int) substr($lastOrder->invoice_number, -5);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
 
-        return $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
     }
 }

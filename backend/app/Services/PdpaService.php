@@ -35,9 +35,10 @@ class PdpaService
         string $consentType,
         string $wording,
         string $version,
-        Request $request
+        Request $request,
+        ?string $identifier = null
     ): PdpaConsent {
-        $pseudonymizedId = $this->pseudonymize($customerId ?? $request->ip());
+        $pseudonymizedId = $this->pseudonymize($identifier ?? $customerId ?? $request->ip());
         $consentWordingHash = $this->hashConsentWording($wording);
         $expiresAt = $this->calculateExpirationDate();
 
@@ -91,7 +92,7 @@ class PdpaService
      * @param Request $request HTTP request
      * @return array Array of consent records created
      */
-    public function recordConsents(?string $customerId, array $consents, Request $request): array
+    public function recordConsents(?string $customerId, array $consents, Request $request, ?string $identifier = null): array
     {
         $uniqueConsents = collect($consents)->unique('type')->values();
         $results = [];
@@ -102,7 +103,8 @@ class PdpaService
                 $consentData['type'],
                 $consentData['wording'],
                 $consentData['version'],
-                $request
+                $request,
+                $identifier
             );
         }
 
@@ -223,9 +225,9 @@ class PdpaService
                         'id' => $order->id,
                         'invoice_number' => $order->invoice_number,
                         'status' => $order->status,
-                        'subtotal_cents' => $order->subtotal_cents,
-                        'gst_cents' => $order->gst_cents,
-                        'total_cents' => $order->total_cents,
+                        'subtotal' => $order->subtotal,
+                        'gst_amount' => $order->gst_amount,
+                        'total_amount' => $order->total_amount,
                         'created_at' => $order->created_at->toIso8601String(),
                     ];
                 })

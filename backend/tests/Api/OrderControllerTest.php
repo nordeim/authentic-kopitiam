@@ -8,6 +8,7 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\PdpaConsent;
+use App\Services\PdpaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,15 @@ class OrderControllerTest extends TestCase
 
         $this->location = Location::factory()->create([
             'name' => 'Test Kopitiam',
+            'operating_hours' => [
+                'mon' => ['open' => '00:00', 'close' => '23:59', 'is_closed' => false],
+                'tue' => ['open' => '00:00', 'close' => '23:59', 'is_closed' => false],
+                'wed' => ['open' => '00:00', 'close' => '23:59', 'is_closed' => false],
+                'thu' => ['open' => '00:00', 'close' => '23:59', 'is_closed' => false],
+                'fri' => ['open' => '00:00', 'close' => '23:59', 'is_closed' => false],
+                'sat' => ['open' => '00:00', 'close' => '23:59', 'is_closed' => false],
+                'sun' => ['open' => '00:00', 'close' => '23:59', 'is_closed' => false],
+            ]
         ]);
 
         $category = Category::factory()->create(['name' => 'Beverages']);
@@ -53,12 +63,15 @@ class OrderControllerTest extends TestCase
 
     public function test_create_order_with_valid_data()
     {
+        $pickupAtDate = now()->addDays(1)->setHour(14)->setMinute(0)->setSecond(0);
+        $pickupAtString = $pickupAtDate->toIso8601String();
+
         $orderData = [
             'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => $pickupAtString,
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
@@ -68,7 +81,7 @@ class OrderControllerTest extends TestCase
             ],
         ];
 
-        $response = $this->postJson('/api/v1/orders', $orderData);
+        $response = $this->postJson('/api/v1/orders', $orderData, ['REMOTE_ADDR' => '127.0.0.1']);
 
         $response->assertStatus(201);
         $response->assertJsonStructure([
@@ -81,9 +94,9 @@ class OrderControllerTest extends TestCase
                 'pickup_at',
                 'status',
                 'notes',
-                'subtotal_cents',
-                'gst_cents',
-                'total_cents',
+                'subtotal',
+                'gst_amount',
+                'total_amount',
                 'created_at',
                 'updated_at',
                 'location',
@@ -99,17 +112,17 @@ class OrderControllerTest extends TestCase
                 'customer_phone' => '+65 81234567',
                 'location_id' => $this->location->id,
                 'status' => 'pending',
-                'subtotal_cents' => 300,
-                'gst_cents' => 27,
-                'total_cents' => 327,
+                'subtotal' => 3.00,
+                'gst_amount' => 0.27,
+                'total_amount' => 3.27,
             ],
             'message' => 'Order created successfully',
         ]);
 
-        // Verify pickup time format
-        $pickupAt = \Carbon\Carbon::parse($response->json('data.pickup_at'));
-        $this->assertEquals(14, $pickupAt->hour);
-        $this->assertEquals(0, $pickupAt->minute);
+        // Verify pickup time format (convert to Singapore time for assertion)
+        $pickupAtResponse = \Carbon\Carbon::parse($response->json('data.pickup_at'))->setTimezone('Asia/Singapore');
+        $this->assertEquals(14, $pickupAtResponse->hour);
+        $this->assertEquals(0, $pickupAtResponse->minute);
 
         // Verify inventory was decreased
         $product = Product::find($this->products[0]->id);
@@ -118,59 +131,65 @@ class OrderControllerTest extends TestCase
 
     public function test_create_order_calculates_gst_correctly()
     {
+        $product = Product::factory()->create([
+            'price' => 10.00,
+            'stock_quantity' => 10,
+            'category_id' => $this->products[0]->category_id,
+        ]);
+
         $orderData = [
             'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
-                    'product_id' => $this->products[0]->id,
+                    'product_id' => $product->id,
                     'quantity' => 1,
-                    'unit_price_cents' => 1000, // $10.00
+                    'unit_price' => 10.00, // $10.00
                 ],
             ],
         ];
 
-        $response = $this->postJson('/api/v1/orders', $orderData);
+        $response = $this->postJson('/api/v1/orders', $orderData, ['REMOTE_ADDR' => '127.0.0.1']);
 
         $response->assertStatus(201);
         $response->assertJson([
             'data' => [
-                'subtotal_cents' => 1000,
-                'gst_cents' => 90, // 9% of $10 = $0.90 = 90 cents
-                'total_cents' => 1090,
+                'subtotal' => 10.00,
+                'gst_amount' => 0.90, // 9% of $10 = $0.90
+                'total_amount' => 10.90,
             ],
         ]);
     }
 
     public function test_create_order_calculates_gst_edge_cases()
     {
-        // Test rounding edge case: $1.50 * 0.09 = 13.5 cents => should be 14 cents
+        // Test rounding edge case: $1.50 * 0.09 = 0.135 => should be 0.14
         $orderData = [
             'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 1,
-                    'unit_price_cents' => 150, // $1.50
+                    'unit_price' => 1.50, // $1.50
                 ],
             ],
         ];
 
-        $response = $this->postJson('/api/v1/orders', $orderData);
+        $response = $this->postJson('/api/v1/orders', $orderData, ['REMOTE_ADDR' => '127.0.0.1']);
 
         $response->assertStatus(201);
         $response->assertJson([
             'data' => [
-                'subtotal_cents' => 150,
-                'gst_cents' => 14, // Should be 14 (rounded up from 13.5)
-                'total_cents' => 164,
+                'subtotal' => 1.50,
+                'gst_amount' => 0.1350, // 1.50 * 0.09 = 0.1350
+                'total_amount' => 1.6350,
             ],
         ]);
     }
@@ -186,12 +205,12 @@ class OrderControllerTest extends TestCase
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 2,
-                    'unit_price_cents' => 150,
+                    'unit_price' => 1.50,
                 ],
             ],
         ];
@@ -218,12 +237,12 @@ class OrderControllerTest extends TestCase
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 3,
-                    'unit_price_cents' => 150,
+                    'unit_price' => 1.50,
                 ],
             ],
         ];
@@ -232,7 +251,7 @@ class OrderControllerTest extends TestCase
         $responses = [];
         for ($i = 0; $i < 4; $i++) {
             $orderData['customer_email'] = "customer{$i}@example.com";
-            $responses[] = $this->postJson('/api/v1/orders', $orderData);
+            $responses[] = $this->postJson('/api/v1/orders', $orderData, ['REMOTE_ADDR' => '127.0.0.1']);
         }
 
         // Wait for all to complete
@@ -256,17 +275,17 @@ class OrderControllerTest extends TestCase
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 2,
-                    'unit_price_cents' => 150,
+                    'unit_price' => 1.50,
                 ],
             ],
         ];
 
-        $response = $this->postJson('/api/v1/orders', $orderData);
+        $response = $this->postJson('/api/v1/orders', $orderData, ['REMOTE_ADDR' => '127.0.0.1']);
         $response->assertStatus(201);
 
         $orderId = $response->json('data.id');
@@ -298,17 +317,17 @@ class OrderControllerTest extends TestCase
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 2,
-                    'unit_price_cents' => 150,
+                    'unit_price' => 1.50,
                 ],
             ],
         ];
 
-        $createResponse = $this->postJson('/api/v1/orders', $orderData);
+        $createResponse = $this->postJson('/api/v1/orders', $orderData, ['REMOTE_ADDR' => '127.0.0.1']);
         $createResponse->assertStatus(201);
         $orderId = $createResponse->json('data.id');
         $invoiceNumber = $createResponse->json('data.invoice_number');
@@ -329,22 +348,36 @@ class OrderControllerTest extends TestCase
 
     public function test_pickup_at_validation_against_operating_hours()
     {
+        // Update location to close at 22:00
+        $this->location->update([
+            'operating_hours' => [
+                'mon' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'tue' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'wed' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'thu' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'fri' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'sat' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+                'sun' => ['open' => '07:00', 'close' => '22:00', 'is_closed' => false],
+            ]
+        ]);
+
         $orderData = [
             'customer_name' => 'John Doe',
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T23:00:00+08:00', // After closing time (22:00)
+            'pickup_at' => now()->addDays(1)->setHour(23)->toIso8601String(), // After closing time (22:00)
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 1,
-                    'unit_price_cents' => 150,
+                    'unit_price' => 1.50,
                 ],
             ],
         ];
 
-        $response = $this->postJson('/api/v1/orders', $orderData);
+        $response = $this->withServerVariables(['REMOTE_ADDR' => '127.0.0.1'])
+                         ->postJson('/api/v1/orders', $orderData);
 
         $response->assertStatus(422);
         $response->assertJson([
@@ -361,17 +394,17 @@ class OrderControllerTest extends TestCase
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 1,
-                    'unit_price_cents' => 150,
+                    'unit_price' => 1.50,
                 ],
             ],
         ];
 
-        $response = $this->postJson('/api/v1/orders', $orderData);
+        $response = $this->postJson('/api/v1/orders', $orderData, ['REMOTE_ADDR' => '127.0.0.1']);
 
         $response->assertStatus(201);
         $invoiceNumber = $response->json('data.invoice_number');
@@ -389,12 +422,12 @@ class OrderControllerTest extends TestCase
             'customer_email' => 'customer@example.com',
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T17:35:05+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 1,
-                    'unit_price_cents' => 1350,
+                    'unit_price' => 13.50,
                 ],
             ],
             'consent' => [
@@ -416,12 +449,13 @@ class OrderControllerTest extends TestCase
             'consent_count' => count($orderData['consent'])
         ]);
 
-        $response = $this->postJson('/api/v1/orders', $orderData);
+        $response = $this->withServerVariables(['REMOTE_ADDR' => '127.0.0.1'])
+                         ->postJson('/api/v1/orders', $orderData);
 
         $response->assertStatus(201);
 
         // Verify consents recorded
-        $pseudonymizedId = hash('sha256', 'customer@example.com');
+        $pseudonymizedId = app(PdpaService::class)->pseudonymize('customer@example.com');
 
         \Log::debug('Checking consents in database', ['pseudonymized_id' => $pseudonymizedId]);
 
@@ -454,7 +488,7 @@ class OrderControllerTest extends TestCase
     public function test_duplicate_consent_renews_existing_record()
     {
         $customerEmail = 'customer@example.com';
-        $pseudonymizedId = hash('sha256', $customerEmail);
+        $pseudonymizedId = app(PdpaService::class)->pseudonymize($customerEmail);
 
         // Create initial consent
         PdpaConsent::create([
@@ -465,6 +499,7 @@ class OrderControllerTest extends TestCase
             'expires_at' => now()->addDays(20),
             'consent_wording_hash' => hash('sha256', 'Old wording'),
             'consent_version' => '1.0',
+            'ip_address' => '127.0.0.1',
         ]);
 
         // Create order with same consent type
@@ -473,12 +508,12 @@ class OrderControllerTest extends TestCase
             'customer_email' => $customerEmail,
             'customer_phone' => '+65 81234567',
             'location_id' => $this->location->id,
-            'pickup_at' => '2026-01-18T14:00:00+08:00',
+            'pickup_at' => now()->addDays(1)->setHour(14)->toIso8601String(),
             'items' => [
                 [
                     'product_id' => $this->products[0]->id,
                     'quantity' => 1,
-                    'unit_price_cents' => 1350,
+                    'unit_price' => 13.50,
                 ],
             ],
             'consent' => [
@@ -490,7 +525,8 @@ class OrderControllerTest extends TestCase
             ],
         ];
 
-        $response = $this->postJson('/api/v1/orders', $orderData);
+        $response = $this->withServerVariables(['REMOTE_ADDR' => '127.0.0.1'])
+                         ->postJson('/api/v1/orders', $orderData);
         $response->assertStatus(201);
 
         // Should have only one consent record (not duplicate)

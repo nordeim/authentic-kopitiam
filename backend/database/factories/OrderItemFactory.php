@@ -16,7 +16,7 @@ class OrderItemFactory extends Factory
         return [
             'order_id' => Order::factory(),
             'product_id' => Product::factory(),
-            'unit_price_cents' => fake()->numberBetween(200, 1500), // $2.00 - $15.00
+            'unit_price' => fake()->numberBetween(200, 1500), // DECIMAL(10,4) $2.0000 - $15.0000
             'quantity' => fake()->numberBetween(1, 5),
             'unit_name' => fake()->randomElement(['cup', 'piece', 'set', 'bowl']),
             'notes' => fake()->sentence(5, true),

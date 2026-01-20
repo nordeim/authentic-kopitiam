@@ -149,20 +149,20 @@ class OrderController extends Controller
                 'payment_method' => $request->input('payment_method', 'paynow'),
                 'payment_status' => 'pending',
                 'notes' => $request->notes,
-                'subtotal_cents' => 0,
-                'gst_cents' => 0,
-                'total_cents' => 0,
+                'subtotal' => 0,
+                'gst_amount' => 0,
+                'total_amount' => 0,
             ]);
 
             // Create order items with price snapshotting
             foreach ($items as $itemData) {
                 $product = Product::findOrFail($itemData['product_id']);
-                $unitPriceCents = (int) round($product->price * 100);
+                $unitPrice = $product->price;
 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $itemData['product_id'],
-                    'unit_price_cents' => $unitPriceCents,
+                    'unit_price' => $unitPrice,
                     'quantity' => $itemData['quantity'],
                     'unit_name' => $itemData['unit_name'] ?? 'piece',
                     'notes' => $itemData['notes'] ?? null,
@@ -345,12 +345,13 @@ class OrderController extends Controller
     {
         try {
             // Determine customer identifier (user_id for authenticated, email for guests)
-            $customerId = $order->user_id ?? null;
+            $customerId = $order->user_id;
+            $identifier = $order->user_id ?? $order->customer_email;
 
             \Log::debug('Processing consents', [
                 'order_id' => $order->id,
                 'customer_id' => $customerId,
-                'customer_email' => $order->customer_email,
+                'identifier' => $identifier,
                 'consent_count' => count($consents)
             ]);
 
@@ -366,7 +367,8 @@ class OrderController extends Controller
                     $consentData['type'],
                     $consentData['wording'],
                     $consentData['version'],
-                    $request
+                    $request,
+                    $identifier
                 );
             }
 
