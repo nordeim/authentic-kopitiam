@@ -14,7 +14,7 @@
 
 ## 🎯 What We've Built
 
-Morning Brew Collective is a **Singapore-first headless e-commerce platform** that digitizes a heritage 1970s kopitiam. This isn't just a website—it's a **transactionally robust system** capable of handling real-time inventory, GST-compliant invoicing, PayNow payments, and InvoiceNow integration—all while preserving a distinctive retro-kopitiam aesthetic rooted in Singapore's coffee shop heritage.
+Morning Brew Collective is a **Singapore-first headless e-commerce platform** that digitizes a heritage 1970s kopitiam. This isn't just a website—it's a **transactionally robust system** capable of handling real-time inventory, GST-compliant invoicing (`DECIMAL(10,4)` precision), PayNow payments, and InvoiceNow integration—all while preserving a distinctive retro-kopitiam aesthetic rooted in Singapore's coffee shop heritage.
 
 **Live Demo**: [https://morningbrew.collective](https://morningbrew.collective)
 
@@ -579,7 +579,7 @@ For enterprise deployments: enterprise@morningbrew.collective
 
 **Backend Stack:**
 - Laravel 12 + PHP 8.3
-- PostgreSQL 16 (DECIMAL(10,4) for GST)
+- PostgreSQL 16 (DECIMAL(10,4) for GST compliance)
 - Redis 7 (cache + queues)
 - Stripe PHP SDK + PayNow API
 

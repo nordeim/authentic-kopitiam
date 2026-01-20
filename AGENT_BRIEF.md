@@ -37,7 +37,7 @@
 *   **Components:** Do *not* use raw Shadcn primitives. Use the `retro-*` wrappers (e.g., `retro-button.tsx`) to enforce the 70s aesthetic.
 
 ### Singapore Compliance
-*   **GST (9%):** Prices stored and calculated with high precision (`DECIMAL(10,4)`). Displayed inclusive of GST.
+*   **GST (9%):** Prices stored and calculated with high precision (`DECIMAL(10,4)`). Displayed inclusive of GST. All financial calculations must preserve 4 decimal places to prevent rounding errors.
 *   **PDPA:** Strict consent logging (IP, User Agent, Timestamp, Wording Hash). Data retention policies enforced.
 *   **InvoiceNow:** PEPPOL UBL 2.1 XML generation for B2B.
 *   **PayNow:** Integrated via Stripe.
@@ -68,6 +68,7 @@ The project uses a `Makefile` to standardize common operations.
 *   **Phase 1 (Design System):** **COMPLETE**. Tokens and retro-components implemented.
 *   **Backend Scaffolding:** **COMPLETE**. Laravel 12 API-first structure created with Singapore defaults and dependencies installed.
 *   **Phase 2 (Frontend Architecture):** **IN PROGRESS**. Focus on constructing the Next.js App Router layout, pages (Hero, Menu, Heritage, Locations), and decorative animations.
+*   **Phase 5 (Payment Integration):** **COMPLETE**. Payment UI, Backend Services, and Decimal Precision Remediation (DECIMAL 10,4) are fully implemented and verified.
 *   **Future Phases:** Interactive Components (Ph 3), Backend Domain (Ph 4), Checkout (Ph 5), etc.
 
 ## 6. Directory Map

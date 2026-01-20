@@ -36,14 +36,15 @@ Infrastructure (/infra, /)
 *   Local Dev: Mailpit (Port 8025) for email capture.
 ---
 3. Current Project State (As of January 20, 2026)
-✅ Phase 5 Complete - Payment Integration
+✅ Phase 5 Complete - Payment Integration & Decimal Precision
 Backend (Payment Domain):
 *   Services: PaymentService (382 lines), StripeService (238 lines), PayNowService (244 lines), InventoryService, PdpaService
 *   Models: Payment (SoftDeletes), PaymentRefund (audit trail), Order, OrderItem, Product, Location, PdpaConsent, Category, User
 *   Controllers: PaymentController (4 endpoints), WebhookController (Stripe & PayNow), OrderController, ProductController, LocationController, PdpaConsentController
 *   APIs: PayNow QR generation, Stripe PaymentIntent, webhooks, refunds, status tracking
 *   Middleware: VerifyOrderOwnership (zero-trust authentication)
-*   Migrations: All tables with DECIMAL(10,4) precision, proper indexes, soft deletes, composite unique constraints
+*   Migrations: All tables with DECIMAL(10,4) precision, proper indexes, soft deletes, composite unique constraints.
+*   **Compliance**: Full alignment with Singapore GST (9%) requiring 4 decimal places.
 Frontend (Payment UI):
 *   8 Payment Components: 1,839 lines of production code
     *   payment-method-selector.tsx (radio cards for PayNow/Card)
@@ -57,6 +58,7 @@ Frontend (Payment UI):
 *   Pages: /checkout/payment/, /checkout/confirmation/
 *   State: Payment store with Zustand, localStorage persistence
 *   Design: 100% WCAG AAA compliance, retro-styled Stripe Elements
+*   **Precision**: `decimal-utils.ts` handles high-precision math (x10000 scale) to prevent floating point errors.
 ✅ Frontend Foundation Complete - Phase 2
 *   Design System: tokens.css (38 colors, 16 spacing, 6 animations), globals.css, animations.css, patterns.css, accessibility.css
 *   Retro Components: 9 wrappers implemented (retro-dialog, retro-button, retro-dropdown, retro-popover, retro-select, retro-checkbox, retro-switch, retro-progress, retro-slider)
@@ -67,7 +69,7 @@ Frontend (Payment UI):
 *   Models: All domain models with proper casts, relationships, scopes
 *   APIs: RESTful endpoints with validation, OpenAPI documentation
 *   Services: Inventory reservation (Redis + PostgreSQL), PDPA pseudonymization, GST calculations
-*   Testing: 7 test files (OrderController, ProductController, LocationController, PdpaConsentController, PaymentService unit tests)
+*   Testing: OrderControllerTest (11/11 passing), ProductControllerTest, LocationControllerTest.
 🐳 Infrastructure - Phase 0
 *   Docker Compose: PostgreSQL 16, Redis 7, Backend, Frontend configured
 *   Makefile: Standard commands (make up, make down, make logs, make migrate, make test)
@@ -81,7 +83,7 @@ Frontend (Payment UI):
 | Backend Controllers | 6 controllers | ✅ Complete |
 | Database Tables | 9 tables | ✅ Migrated |
 | API Endpoints | 15+ endpoints | ✅ Documented |
-| Test Files | 7 files | ⚠️ Infrastructure needed |
+| Test Files | 7 files | ⚠️ PaymentServiceTest pending |
 | Docker Services | 4 services | ✅ Running |
 ---
 4. Operational Guide & Commands
@@ -141,11 +143,11 @@ Design Reference
 7. Test Coverage Status
 Current Test Implementation (Phase 6 in Progress)
 Backend Tests (7 files located in /backend/tests/):
-*   Api/OrderControllerTest.php - 152 assertions (10 methods)
+*   Api/OrderControllerTest.php - 11/11 PASSING (62 assertions) - Full decimal compliance verified
 *   Api/ProductControllerTest.php - CRUD operations
 *   Api/LocationControllerTest.php - Location endpoints
-*   Api/PdpaConsentControllerTest.php - Consent tracking
-*   Unit/PaymentServiceTest.php - Payment logic
+*   Api/PdpaConsentControllerTest.php - Consent tracking (Authentication issue pending)
+*   Unit/PaymentServiceTest.php - Payment logic (Legacy mock data pending update)
 *   TestCase.php - Base test case
 Frontend Tests - Infrastructure being built:
 *   E2E Tests: Playwright setup pending (referenced in README but not implemented)
@@ -213,6 +215,11 @@ Decision 5: Decimal Precision Strategy
 *   Rationale: Singapore GST calculations require 4 decimal precision to avoid rounding errors on 9% tax
 *   Implementation: All migrations use $table->decimal('price', 10, 4)
 *   Files: All migration files, backend/app/Models/ casts
+Decision 6: Boundary Conversion Strategy
+*   Chosen: Isolate integer-to-cents conversion to Stripe API boundary only
+*   Rationale: Stripe API requires integer cents, but project mandate requires DECIMAL(10,4) throughout the application to prevent rounding errors.
+*   Implementation: `StripeService` converts decimal to cents internally before calling Stripe SDK. `PaymentService` and Models always use decimal.
+*   Files: `backend/app/Services/StripeService.php`, `backend/app/Services/PaymentService.php`
 ---
 10. Common Pitfalls & Prevention (from Phase 4.6 Lessons)
 PIT-001: Redis Double-Prefixing
