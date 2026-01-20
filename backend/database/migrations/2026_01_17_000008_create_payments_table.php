@@ -18,8 +18,8 @@ if (Schema::hasTable('payments')) {            return;        }
             $table->foreignUuid('order_id')->constrained()->cascadeOnDelete();
             $table->string('payment_method'); // 'paynow', 'stripe_card', 'stripe_paynow'
             $table->string('status'); // 'pending', 'processing', 'completed', 'failed', 'refunded'
-            $table->decimal('amount', 10, 2)->unsigned();
-            $table->decimal('refunded_amount', 10, 2)->unsigned()->default(0);
+            $table->decimal('amount', 10, 4)->unsigned();
+            $table->decimal('refunded_amount', 10, 4)->unsigned()->default(0);
             $table->string('currency', 3)->default('SGD');
             $table->string('payment_provider'); // 'stripe', 'paynow'
             $table->string('provider_payment_id')->nullable()->index();

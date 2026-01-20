@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
             $table->uuid('order_id');
             $table->uuid('product_id');
-            $table->integer('unit_price_cents')->unsigned(); // Price at order time
+            $table->decimal('unit_price', 10, 4)->unsigned(); // Price at order time
             $table->integer('quantity')->unsigned();
             $table->string('unit_name', 50)->nullable();
             $table->text('notes')->nullable();
