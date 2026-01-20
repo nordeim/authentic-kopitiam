@@ -34,7 +34,6 @@ if (Schema::hasTable('payments')) {            return;        }
             $table->softDeletes();
 
             $table->index(['order_id', 'status']);
-            $table->index(['provider_payment_id']);
             $table->index(['payment_method', 'status']);
             $table->index(['payment_completed_at']);
         });

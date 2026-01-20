@@ -21,7 +21,7 @@ return new class extends Migration
             $table->json('provider_metadata')->nullable();
             $table->string('reason');
             $table->boolean('inventory_restored')->default(false);
-            $table->foreignId('refunded_by')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('refunded_by')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
