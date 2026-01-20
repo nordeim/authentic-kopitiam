@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\Location;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentRefund;
@@ -27,6 +28,33 @@ class PaymentServiceTest extends \Tests\TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        // FIX: Create location fixture data for OrderFactory dependency
+        // OrderFactory requires Location records for location_id foreign key
+        // Without this, Order::factory()->create() fails with NotNullViolation
+        // Use actual columns schema has: address_line1, address_line2, city, postal_code, country
+        if (Location::count() === 0) {
+            Location::factory()->create([
+                'name' => 'Test Location for Payments',
+                'address_line1' => '123 Test Street',
+                'address_line2' => 'Unit 1-1',
+                'city' => 'Singapore',
+                'postal_code' => '123456',
+                'country' => 'Singapore',
+                'phone' => '+65 6123 4567',
+                'operating_hours' => [
+                    'mon' => ['open' => '09:00', 'close' => '18:00', 'is_closed' => false],
+                    'tue' => ['open' => '09:00', 'close' => '18:00', 'is_closed' => false],
+                    'wed' => ['open' => '09:00', 'close' => '18:00', 'is_closed' => false],
+                    'thu' => ['open' => '09:00', 'close' => '18:00', 'is_closed' => false],
+                    'fri' => ['open' => '09:00', 'close' => '18:00', 'is_closed' => false],
+                    'sat' => ['open' => '09:00', 'close' => '16:00', 'is_closed' => false],
+                    'sun' => ['open' => '10:00', 'close' => '14:00', 'is_closed' => false],
+                ],
+                'latitude' => 1.3521,
+                'longitude' => 103.8198,
+            ]);
+        }
 
         $this->stripeService = Mockery::mock(StripeService::class);
         $this->paynowService = Mockery::mock(PayNowService::class);
