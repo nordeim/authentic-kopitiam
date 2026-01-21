@@ -58,12 +58,12 @@ export function FloatingCoffeeCup({
             cy={70}
             rx={70}
             ry={20}
-            fill="rgb(var(--color-terracotta-warm))"
+            fill="var(--color-terracotta-warm)"
           />
           
           <path
             d="M30 70 L40 180 Q100 200 160 180 L170 70"
-            fill="rgb(var(--color-espresso-dark))"
+            fill="var(--color-espresso-dark)"
           />
           
           <ellipse
@@ -71,7 +71,7 @@ export function FloatingCoffeeCup({
             cy={70}
             rx={60}
             ry={15}
-            fill="rgb(var(--color-mocha-medium))"
+            fill="var(--color-mocha-medium)"
           />
           
           <ellipse
@@ -79,20 +79,20 @@ export function FloatingCoffeeCup({
             cy={70}
             rx={55}
             ry={12}
-            fill="rgb(var(--color-terracotta-warm))"
+            fill="var(--color-terracotta-warm)"
           />
           
           <path
             d="M165 90 Q200 90 200 130 Q200 170 165 170"
             fill="none"
-            stroke="rgb(var(--color-espresso-dark))"
+            stroke="var(--color-espresso-dark)"
             strokeWidth={12}
             strokeLinecap="round"
           />
           
           <path
             d="M35 120 L165 120"
-            stroke="rgb(var(--color-sunrise-amber))"
+            stroke="var(--color-sunrise-amber)"
             strokeWidth={4}
             strokeDasharray="10 5"
           />

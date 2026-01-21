@@ -7,8 +7,8 @@
   /* ═══════════════════════════════════════════════════════════════
      PRIMARY PALETTE: Cheerful Coffee Morning
      ═══════════════════════════════════════════════════════════════ */
-  --color-sunrise-amber: 232 168 87;
-  --color-sunrise-amber-hover: 212 148 67;
+  --color-sunrise-amber: rgb(232 168 87);
+  --color-sunrise-amber-hover: rgb(212 148 67);
   --color-sunrise-amber-5: rgb(232 168 87 / 0.05);
   --color-sunrise-amber-10: rgb(232 168 87 / 0.1);
   --color-sunrise-amber-20: rgb(232 168 87 / 0.2);
@@ -17,8 +17,8 @@
   --color-sunrise-amber-70: rgb(232 168 87 / 0.7);
   --color-sunrise-amber-90: rgb(232 168 87 / 0.9);
 
-  --color-terracotta-warm: 212 105 59;
-  --color-terracotta-warm-hover: 180 85 45;
+  --color-terracotta-warm: rgb(212 105 59);
+  --color-terracotta-warm-hover: rgb(180 85 45);
   --color-terracotta-warm-5: rgb(212 105 59 / 0.05);
   --color-terracotta-warm-10: rgb(212 105 59 / 0.1);
   --color-terracotta-warm-20: rgb(212 105 59 / 0.2);
@@ -27,7 +27,7 @@
   --color-terracotta-warm-70: rgb(212 105 59 / 0.7);
   --color-terracotta-warm-90: rgb(212 105 59 / 0.9);
 
-  --color-cream-white: 255 248 231;
+  --color-cream-white: rgb(255 248 231);
   --color-cream-white-5: rgb(255 248 231 / 0.05);
   --color-cream-white-10: rgb(255 248 231 / 0.1);
   --color-cream-white-20: rgb(255 248 231 / 0.2);
@@ -36,8 +36,8 @@
   --color-cream-white-70: rgb(255 248 231 / 0.7);
   --color-cream-white-90: rgb(255 248 231 / 0.9);
 
-  --color-espresso-dark: 61 43 31;
-  --color-espresso-dark-hover: 45 35 25;
+  --color-espresso-dark: rgb(61 43 31);
+  --color-espresso-dark-hover: rgb(45 35 25);
   --color-espresso-dark-5: rgb(61 43 31 / 0.05);
   --color-espresso-dark-10: rgb(61 43 31 / 0.1);
   --color-espresso-dark-20: rgb(61 43 31 / 0.2);
@@ -46,8 +46,8 @@
   --color-espresso-dark-70: rgb(61 43 31 / 0.7);
   --color-espresso-dark-90: rgb(61 43 31 / 0.9);
 
-  --color-coral-pop: 255 123 84;
-  --color-coral-pop-hover: 235 100 65;
+  --color-coral-pop: rgb(255 123 84);
+  --color-coral-pop-hover: rgb(235 100 65);
   --color-coral-pop-5: rgb(255 123 84 / 0.05);
   --color-coral-pop-10: rgb(255 123 84 / 0.1);
   --color-coral-pop-20: rgb(255 123 84 / 0.2);
@@ -56,8 +56,8 @@
   --color-coral-pop-70: rgb(255 123 84 / 0.7);
   --color-coral-pop-90: rgb(255 123 84 / 0.9);
 
-  --color-sage-fresh: 143 166 138;
-  --color-sage-fresh-hover: 123 146 118;
+  --color-sage-fresh: rgb(143 166 138);
+  --color-sage-fresh-hover: rgb(123 146 118);
   --color-sage-fresh-5: rgb(143 166 138 / 0.05);
   --color-sage-fresh-10: rgb(143 166 138 / 0.1);
   --color-sage-fresh-20: rgb(143 166 138 / 0.2);
@@ -66,8 +66,8 @@
   --color-sage-fresh-70: rgb(143 166 138 / 0.7);
   --color-sage-fresh-90: rgb(143 166 138 / 0.9);
 
-  --color-cinnamon-glow: 198 134 66;
-  --color-cinnamon-glow-hover: 170 115 50;
+  --color-cinnamon-glow: rgb(198 134 66);
+  --color-cinnamon-glow-hover: rgb(170 115 50);
   --color-cinnamon-glow-5: rgb(198 134 66 / 0.05);
   --color-cinnamon-glow-10: rgb(198 134 66 / 0.1);
   --color-cinnamon-glow-20: rgb(198 134 66 / 0.2);
@@ -76,8 +76,8 @@
   --color-cinnamon-glow-70: rgb(198 134 66 / 0.7);
   --color-cinnamon-glow-90: rgb(198 134 66 / 0.9);
 
-  --color-honey-light: 245 222 179;
-  --color-honey-light-hover: 230 205 160;
+  --color-honey-light: rgb(245 222 179);
+  --color-honey-light-hover: rgb(230 205 160);
   --color-honey-light-5: rgb(245 222 179 / 0.05);
   --color-honey-light-10: rgb(245 222 179 / 0.1);
   --color-honey-light-20: rgb(245 222 179 / 0.2);
@@ -86,8 +86,8 @@
   --color-honey-light-70: rgb(245 222 179 / 0.7);
   --color-honey-light-90: rgb(245 222 179 / 0.9);
 
-  --color-mocha-medium: 107 68 35;
-  --color-mocha-medium-hover: 90 55 25;
+  --color-mocha-medium: rgb(107 68 35);
+  --color-mocha-medium-hover: rgb(90 55 25);
   --color-mocha-medium-5: rgb(107 68 35 / 0.05);
   --color-mocha-medium-10: rgb(107 68 35 / 0.1);
   --color-mocha-medium-20: rgb(107 68 35 / 0.2);
@@ -99,10 +99,10 @@
   /* ═══════════════════════════════════════════════════════════════
      EXTENDED PALETTE
      ═══════════════════════════════════════════════════════════════ */
-  --color-caramel-swirl: 212 165 116;
-  --color-butter-toast: 230 201 168;
-  --color-vintage-paper: 250 243 227;
-  --color-kopi-black: 42 31 22;
+  --color-caramel-swirl: rgb(212 165 116);
+  --color-butter-toast: rgb(230 201 168);
+  --color-vintage-paper: rgb(250 243 227);
+  --color-kopi-black: rgb(42 31 22);
 
   /* ═══════════════════════════════════════════════════════════════
      GRADIENTS
@@ -258,12 +258,5 @@
 /* ═══════════════════════════════════════════════════════════════
    TOKEN USAGE
    ═══════════════════════════════════════════════════════════════ */
-
-/* Colors with opacity support */
-.color-sunrise-amber { color: rgb(232 168 87 / <alpha-value>); }
-.bg-sunrise-amber { background-color: rgb(232 168 87 / <alpha-value>); }
-.border-sunrise-amber { border-color: rgb(232 168 87 / <alpha-value>); }
-
-/* Apply the same pattern for all other colors... */
 
 /* Tokens End */

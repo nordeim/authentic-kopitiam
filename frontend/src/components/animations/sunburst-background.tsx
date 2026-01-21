@@ -7,8 +7,8 @@ interface SunburstBackgroundProps {
 }
 
 export function SunburstBackground({
-  color1 = 'rgb(var(--color-sunrise-amber))',
-  color2 = 'rgb(var(--color-latte-cream-warm))',
+  color1 = 'var(--color-sunrise-amber)',
+  color2 = 'var(--color-cream-white)',
   duration = 120,
 }: SunburstBackgroundProps) {
   return (
