@@ -7,20 +7,22 @@ interface SteamParticleProps {
   delay: number;
   x: number;
   size: number;
+  baseX: number;
 }
 
-function SteamParticle({ delay, x, size }: SteamParticleProps) {
+function SteamParticle({ delay, x, size, baseX }: SteamParticleProps) {
   return (
-    <div
+    <circle
+      className="steam-particle"
+      cx={baseX + x}
+      cy={0}
+      r={size / 2}
+      fill="rgba(255,255,255, 0.7)"
       style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        background: 'rgba(255,255,255, 0.7)',
-        borderRadius: '50%',
         animation: `steamRise 2s ease-in-out infinite`,
         animationDelay: `${delay}s`,
-        position: 'relative',
-        left: `${x}px`,
+        transformBox: 'fill-box',
+        transformOrigin: 'center',
       }}
     />
   );
@@ -35,6 +37,8 @@ export function SteamRise({
     { delay: 0.3, x: 0 },
     { delay: 0.6, x: 15 },
   ];
+
+  const gap = 8; // var(--space-2) approximation
 
   return (
     <>
@@ -59,23 +63,17 @@ export function SteamRise({
           }
         }
       `}</style>
-      <div
-        className="steam"
-        style={{
-          position: 'relative',
-          display: 'flex',
-          gap: 'var(--space-2)',
-        }}
-      >
+      <g className="steam">
         {particles.slice(0, count).map((particle, index) => (
           <SteamParticle
             key={index}
             delay={particle.delay}
             x={particle.x}
             size={particleSize}
+            baseX={index * (particleSize + gap)}
           />
         ))}
-      </div>
+      </g>
     </>
   );
 }

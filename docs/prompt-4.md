@@ -50,6 +50,14 @@ please meticulously review what you were doing before you stopped, then meticulo
 
 ---
 
+Awesome job on your meticulous analysis, planning and execution. Please keep up the good work in your rigorous and meticulous approach to planning and execution. Now, please meticulously review @Project_Architecture_Document.md and @Project_Architecture_Document_QUICKSTART.md and validate them very carefully and systematically against the codebase to ensure these documents are correctly and accurately aligned with the WHAT, WHY and HOW of the project as well as the current state of the project and its codebase.
+
+---
+
+Awesome job on your meticulous review, analysis and planning. Please keep up the good work in your rigorous and meticulous approach to planning and execution. Now, please meticulously review and validate the browser console error below, carefully and systematically validate the error against the actual codebase to correctly and accurately identify the root cause. then meticulously plan and fix the error. 
+
+---
+
 awesome meticulous job so far. please keep up the rigorous and meticulous approach going forward. now, please meticulously review the following request, validate the issue before executing the tool call as intended. 
 
 ---

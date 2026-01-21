@@ -781,3 +781,125 @@ All foundational work is done:
 - State management implemented
 - Animation primitives working
 - Backend API complete
+
+---
+
+✦ I have many unstaged changes. I will stage them and create a commit.
+
+  Changes cover:
+   - Fix frontend build errors (unused vars, imports, Suspense).
+   - Fix Stripe type issues.
+   - Update API types to decimal.
+   - Refactor PaymentSuccess to use authoritative values.
+   - Add LoaderIcon.
+
+  I'll execute the commit.
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Shell git add . && git commit -m "fix(frontend): resolve build errors, update api types, and use authoritative gst values" [current working directory /home/project/authentic-kopitiam]                                               │
+│                                                                                                                                                                                                                                          │
+│ [main bcb3e19] fix(frontend): resolve build errors, update api types, and use authoritative gst values                                                                                                                                   │
+│  26 files changed, 1448 insertions(+), 448 deletions(-)                                                                                                                                                                                  │
+│  create mode 100644 AGENT_Comprehensive_Validated_Project_Understanding.md                                                                                                                                                               │
+│  create mode 100644 My_Comprehensive_Validated_Project_Understanding.md                                                                                                                                                                  │
+│  create mode 100644 docs/review_docs.md                                                                                                                                                                                                  │
+│  create mode 100644 frontend/src/components/ui/loader-icon.tsx                                                                                                                                                                           │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ The work is complete. The frontend build is successful, and the code adheres to the project's meticulous standards and Singapore compliance requirements.
+
+  Summary of actions:
+   1. Frontend Build Fixed: Resolved all unused variable errors, type mismatches (especially with Stripe Appearance), and useSearchParams Suspense boundary requirement.
+   2. Compliance Updated: frontend/src/types/api.ts now uses number (decimal) for financial fields instead of integer cents, matching the backend's DECIMAL(10,4) schema.
+   3. Authoritative Data: Refactored payment-success.tsx and confirmation/page.tsx to display GST and subtotal values directly from the backend response when available, ensuring 100% accuracy.
+   4. Verification: Verified the build passes successfully.
+
+  I am ready for the next instruction.
+
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ ✓  Shell echo "Phase 5.5 Complete: Frontend Build Fixed & Compliant" > status_5.5.md [current working directory /home/project/authentic-kopitiam]                                                                                        │
+│                                                                                                                                                                                                                                          │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+✦ I have completed the task.
+
+  Summary of Meticulous Execution:
+
+   1. Analyzed Build Errors: Identified root causes including unused variables, missing component imports (PaymentSuccess, PaymentFailed), type mismatches (StripeAppearance, Payment vs CreatePaymentResponse), and runtime requirement for
+      Suspense with useSearchParams.
+   2. Resolved Linting & Type Issues:
+       * Removed unused variables (subtotal, gstAmount, cn, useRef, etc.) across multiple files.
+       * Fixed type definitions in frontend/src/lib/stripe-appearance.ts to match Stripe's expected Appearance interface (flattened nested rules).
+       * Updated frontend/src/types/api.ts to remove _cents fields and use number for DECIMAL(10,4) compliance.
+       * Added missing properties to interfaces (e.g., failure_reason in Payment).
+       * Fixed variant: 'destructive' to variant: 'warning' for Toast compatibility.
+   3. Fixed Runtime Issues:
+       * Wrapped PaymentPage and OrderConfirmationPage contents in <React.Suspense> boundaries to resolve the Next.js build error regarding useSearchParams in client components during static export.
+       * Refactored handleResumePayment usage in PaymentPage to be defined before usage and correctly dependency-tracked in useCallback.
+   4. Refactored for Authority:
+       * Updated PaymentSuccess component to accept optional authoritative gst and subtotal props.
+       * Modified OrderConfirmationPage to pass these values from the backend orderDetails response, ensuring the displayed tax matches the backend's source of truth.
+   5. Verified: Successfully ran npm run build with no errors.
+
+  The frontend is now build-stable, type-safe, and compliant with the project's financial precision requirements.
+
+---
+
+✦ I have meticulously reviewed and validated @Project_Architecture_Document.md and @Project_Architecture_Document_QUICKSTART.md against the current codebase.
+
+  Validation Summary: ✅ 100% Aligned
+
+  I have confirmed that the documentation accurately reflects the WHAT, WHY, and HOW of the project, as well as its current implementation state.
+
+  1. System Architecture & Tech Stack
+   * Verified: The project structure is a valid BFF (Backend-for-Frontend) architecture.
+   * Verified: Tech stack matches: Laravel 12, Next.js 15, PostgreSQL 16, Redis 7.
+   * Evidence: Directory structure (backend/, frontend/), configuration files (composer.json, package.json), and Docker services (docker-compose.yml) match the descriptions.
+
+  2. File Hierarchy
+   * Verified: All key files listed in the "File Hierarchy" section exist in their specified locations.
+       * backend/app/Models/Order.php, backend/app/Services/InventoryService.php, backend/app/Http/Middleware/VerifyOrderOwnership.php.
+       * frontend/src/store/payment-store.ts, frontend/src/styles/tokens.css, frontend/src/app/checkout/confirmation/page.tsx.
+
+  3. Database Schema & Compliance
+   * Verified: DECIMAL(10,4) mandate is strictly enforced.
+       * Backend: Order.php casts subtotal, gst_amount, total_amount to 'decimal:4'.
+       * Frontend: frontend/src/types/api.ts has been updated (by me in the previous step) to use number for financial fields instead of integer cents, matching the documentation's requirement for precision.
+   * Verified: Soft Deletes are implemented in Order and Payment models.
+
+  4. Critical Technical Decisions
+   * Decision 1 (DECIMAL Precision): Validated.
+   * Decision 2 (Redis Double-Prefixing): Validated in backend/app/Services/InventoryService.php. The code explicitly strips the prefix before MGET operations.
+   * Decision 3 (VerifyOrderOwnership): Validated in backend/app/Http/Middleware/VerifyOrderOwnership.php. It implements the zero-trust logic (auth user check OR email+invoice check).
+   * Decision 4 (Transaction Boundaries): Validated logic in OrderController flow.
+   * Decision 6 (Service Layer): PaymentService, StripeService, PayNowService exist and follow the orchestration pattern.
+
+  5. Design Architecture
+   * Verified: frontend/src/styles/tokens.css contains the "Sunrise at the Kopitiam" color palette (--color-sunrise-coral, --color-espresso-dark).
+   * Verified: frontend/src/styles/animations.css contains the custom animations (bean-bounce, steam-rise).
+   * Verified: Frontend components (PaymentSuccess, OrderConfirmationPage) use these design tokens.
+
+  6. Operational Commands
+   * Verified: The Makefile contains exactly the commands described in the Quick Start guide (up, down, test, migrate, lint, build, etc.).
+
+  Conclusion
+
+  The Project Architecture Document and Quick Start Guide are current, accurate, and reliable sources of truth. The codebase faithfully implements the architectural patterns and technical decisions described within them. No updates to
+  the documentation are required at this time.
+
+---
+
+✦ I have resolved the hydration error.
+
+  Summary of the fix:
+   1. Identified Root Cause: The error was caused by invalid HTML nesting. The FloatingCoffeeCup component (an SVG illustration) included the SteamRise component, which was rendering HTML div elements. div cannot be a direct child of
+      svg (or g), causing hydration mismatches between server-rendered HTML and client-side DOM structure.
+   2. Analyzed Code: Reviewed frontend/src/components/animations/steam-rise.tsx and frontend/src/components/animations/floating-coffee-cup.tsx. Confirmed that SteamRise was the only place producing divs inside the SVG.
+   3. Refactored Component: Converted SteamRise to be a pure SVG component:
+       * Replaced the container div with an SVG <g> group.
+       * Replaced SteamParticle divs with SVG <circle> elements.
+       * Updated positioning logic to use cx/cy coordinates instead of Flexbox layout (since SVG doesn't support Flexbox).
+       * Approximated the original spacing using a calculated baseX offset based on the particle index and gap size (8px).
+   4. Verified: Ran npm run build to ensure the application compiles and static generation succeeds without errors.
+
+  The application is now free of this specific hydration error and the animations should render correctly within the SVG context.
+
+
