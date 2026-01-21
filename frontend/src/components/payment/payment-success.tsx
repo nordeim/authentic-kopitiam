@@ -3,12 +3,13 @@
 import * as React from 'react';
 import { CheckCircleIcon, ShareIcon, MapPinIcon, ClockIcon, ReceiptPercentIcon } from '@heroicons/react/24/outline';
 import { useCartStore } from '@/store/cart-store';
-import { cn } from '@/lib/utils';
 
 export interface PaymentSuccessProps {
   orderId: string;
   paymentId: string;
   amount: number;
+  gst?: number;
+  subtotal?: number;
   onTrackOrder?: () => void;
   onShareOrder?: () => void;
   onOrderAgain?: () => void;
@@ -18,14 +19,16 @@ export function PaymentSuccess({
   orderId,
   paymentId,
   amount,
+  gst: providedGst,
+  subtotal: providedSubtotal,
   onTrackOrder,
   onShareOrder,
   onOrderAgain,
 }: PaymentSuccessProps) {
   const { clearCart } = useCartStore();
 
-  const gst = amount * 0.09;
-  const subtotal = amount - gst;
+  const gst = providedGst ?? (amount * 0.09);
+  const subtotal = providedSubtotal ?? (amount - gst);
 
   const handleTrackOrder = () => {
     if (onTrackOrder) {

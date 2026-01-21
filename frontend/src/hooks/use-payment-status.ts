@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { toast } from '@/components/ui/toast-notification';
-import { usePaymentStore } from '@/store/payment-store';
+import { usePaymentStore, Payment } from '@/store/payment-store';
 
 interface UsePaymentStatusOptions {
   paymentId: string;
@@ -68,7 +68,7 @@ export function usePaymentStatus({
           toast({
             title: 'Payment Failed',
             description: errorMessage,
-            variant: 'destructive',
+            variant: 'warning',
           });
           return;
         }
@@ -99,7 +99,7 @@ export function usePaymentStatus({
           toast({
             title: 'Payment Error',
             description: errorMessage,
-            variant: 'destructive',
+            variant: 'warning',
           });
         }
       }

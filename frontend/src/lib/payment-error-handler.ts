@@ -186,7 +186,7 @@ export class PaymentErrorHandler {
       'pickup_card': 'Your card cannot be used for this transaction.',
     };
 
-    return messages[declineCode] || messages['card_declined'] || 'Your card was declined.';
+    return (declineCode && messages[declineCode]) || messages['card_declined'] || 'Your card was declined.';
   }
 
   // Create retry action based on context
@@ -197,14 +197,14 @@ export class PaymentErrorHandler {
         toast({
           title: 'Max Retries Reached',
           description: 'Please contact support for assistance.',
-          variant: 'destructive',
+          variant: 'warning',
         });
         return;
       }
 
       toast({
         title: 'Retrying...',
-        description: `Attempt ${this.retryAttempts}/${this.maxRetryAttempts}`,
+        description: `Retrying ${context} (Attempt ${this.retryAttempts}/${this.maxRetryAttempts})`,
       });
     };
   }
@@ -214,7 +214,7 @@ export class PaymentErrorHandler {
     toast({
       title: 'Payment Error',
       description: error.message,
-      variant: error.recoverable ? 'warning' : 'destructive',
+      variant: 'warning',
     });
   }
 

@@ -2,10 +2,10 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  typedRoutes: true,
   
   // Experimental features for Next.js 15
   experimental: {
-    typedRoutes: true,
     serverActions: {
       bodySizeLimit: '2mb',
       allowedOrigins: ['localhost:8000']

@@ -8,19 +8,17 @@ import { OrderSummary } from '@/components/confirmation/order-summary';
 import { usePaymentStore } from '@/store/payment-store';
 import { useCartStore } from '@/store/cart-store';
 import { toast } from '@/components/ui/toast-notification';
-import { cn } from '@/lib/utils';
 import { LoaderIcon } from '@/components/ui/loader-icon';
-import { usePaymentStatus } from '@/hooks/use-payment-status';
 
 // Icons
 import { ReceiptPercentIcon, MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
 
-export default function OrderConfirmationPage() {
+function OrderConfirmationContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId') || '';
   const paymentId = searchParams.get('paymentId') || '';
   
-  const { status, payment } = usePaymentStore();
+  const { payment } = usePaymentStore();
   const { items, getTotal } = useCartStore();
   
   const [isLoading, setIsLoading] = React.useState(true);
@@ -64,16 +62,20 @@ export default function OrderConfirmationPage() {
 
   // Cleanup cart on success
   React.useEffect(() => {
-    if (status === 'completed') {
+    if (payment?.status === 'completed') {
       // Clear cart after successful payment
       useCartStore.getState().clearCart();
     }
-  }, [status]);
+  }, [payment?.status]);
 
   // Calculate GST
-  const totalAmount = payment?.amount ? parseFloat(payment.amount) : getTotal();
-  const gst = totalAmount * 0.09;
-  const subtotal = totalAmount - gst;
+  const totalAmount = orderDetails?.total ?? (payment?.amount ? payment.amount : getTotal());
+  const gst = orderDetails?.gst ?? (totalAmount * 0.09);
+  const subtotal = orderDetails?.subtotal ?? (totalAmount - gst);
+
+  const handleTrackOrder = () => {
+    window.location.href = `/orders/${orderId}`;
+  };
 
   const handleShareOrder = async () => {
     const shareData = {
@@ -101,7 +103,7 @@ export default function OrderConfirmationPage() {
       toast({
         title: 'Share Failed',
         description: 'Unable to share order details',
-        variant: 'destructive',
+        variant: 'warning',
       });
     }
   };
@@ -185,6 +187,8 @@ export default function OrderConfirmationPage() {
               orderId={orderId}
               paymentId={paymentId}
               amount={totalAmount}
+              gst={gst}
+              subtotal={subtotal}
               onTrackOrder={handleTrackOrder}
               onShareOrder={handleShareOrder}
               onOrderAgain={() => window.location.href = '/menu'}
@@ -285,5 +289,17 @@ export default function OrderConfirmationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[rgb(255,245,230)] to-[#FFFDF6] py-12 flex items-center justify-center">
+        <LoaderIcon className="w-12 h-12 text-[rgb(255,107,74)] animate-spin" />
+      </div>
+    }>
+      <OrderConfirmationContent />
+    </React.Suspense>
   );
 }

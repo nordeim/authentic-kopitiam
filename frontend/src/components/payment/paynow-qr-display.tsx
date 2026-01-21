@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { ArrowDownTrayIcon, ShareIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { usePaymentStore } from '@/store/payment-store';
 import { toast } from '@/components/ui/toast-notification';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +22,6 @@ export function PayNowQRDisplay({
 }: PayNowQRDisplayProps) {
   const [timeRemaining, setTimeRemaining] = React.useState('');
   const [isExpired, setIsExpired] = React.useState(false);
-  const [showTimer, setShowTimer] = React.useState(true);
 
   // Format amount with GST
   const gst = amount * 0.09;
@@ -60,7 +58,7 @@ export function PayNowQRDisplay({
       toast({
         title: 'QR Code Expired',
         description: 'Generating a new QR code...',
-        variant: 'destructive',
+        variant: 'warning',
       });
 
       // Trigger QR refresh
@@ -91,7 +89,7 @@ export function PayNowQRDisplay({
       toast({
         title: 'QR Refresh Failed',
         description: 'Please refresh the page or try again',
-        variant: 'destructive',
+        variant: 'warning',
       });
     }
   };
@@ -120,7 +118,7 @@ export function PayNowQRDisplay({
       toast({
         title: 'Download Failed',
         description: 'Please try again',
-        variant: 'destructive',
+        variant: 'warning',
       });
     }
   };
@@ -148,7 +146,7 @@ export function PayNowQRDisplay({
       toast({
         title: 'Share Failed',
         description: 'Copy payment details manually',
-        variant: 'destructive',
+        variant: 'warning',
       });
     }
   };

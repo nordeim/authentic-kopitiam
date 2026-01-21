@@ -3,7 +3,7 @@
  * Handles all payment-related API calls to the backend
  */
 
-import type { Payment, PaymentMethod } from '@/store/payment-store';
+import type { Payment } from '@/store/payment-store';
 
 export interface CreatePaymentResponse {
   payment_id: string;

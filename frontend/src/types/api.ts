@@ -51,9 +51,9 @@ export interface Order {
   location_id: string;
   pickup_at: string;
   status: OrderStatus;
-  subtotal_cents: number;
-  gst_cents: number;
-  total_cents: number;
+  subtotal: number; // DECIMAL(10,4)
+  gst: number; // DECIMAL(10,4)
+  total: number; // DECIMAL(10,4)
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
   notes: string | null;
@@ -61,9 +61,6 @@ export interface Order {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  subtotal: number; // Calculated from subtotal_cents / 100
-  gst: number; // Calculated from gst_cents / 100
-  total: number; // Calculated from total_cents / 100
   location?: Location;
   items?: OrderItem[];
   payment?: Payment;
@@ -74,14 +71,14 @@ export interface OrderItem {
   id: string;
   order_id: string;
   product_id: string;
-  unit_price_cents: number;
+  unit_price: number; // DECIMAL(10,4)
   quantity: number;
   unit_name: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  subtotal_cents: number; // Calculated: unit_price_cents × quantity
+  subtotal: number; // DECIMAL(10,4)
   product?: Product;
 }
 

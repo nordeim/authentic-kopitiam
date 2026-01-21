@@ -11,7 +11,7 @@ import { toast } from '@/components/ui/toast-notification';
 interface PaymentMethodSelectorProps {
   orderId: string;
   amount: number;
-  onContinue: () => void;
+  onContinue: (method: 'paynow' | 'stripe') => void;
   onCancel: () => void;
 }
 
@@ -52,7 +52,7 @@ export function PaymentMethodSelector({
           toast({
             title: 'Payment Error',
             description: 'Please try again later or contact support',
-            variant: 'destructive',
+            variant: 'warning',
           });
         }
       } catch (error) {
@@ -87,12 +87,14 @@ export function PaymentMethodSelector({
       toast({
         title: 'Select Payment Method',
         description: 'Please choose PayNow or Credit Card',
-        variant: 'destructive',
+        variant: 'warning',
       });
       return;
     }
 
-    onContinue();
+    // Map store type to component prop type
+    const method = selectedMethod === 'stripe_card' ? 'stripe' : 'paynow';
+    onContinue(method);
   };
 
   return (

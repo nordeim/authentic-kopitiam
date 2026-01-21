@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { usePaymentStore } from '@/store/payment-store';
 import { toast } from '@/components/ui/toast-notification';
@@ -41,17 +41,17 @@ export function PaymentStatusTracker({
       });
       onSuccess?.();
     },
-    onFailed: (error) => {
-      toast({
-        title: 'Payment Failed',
-        description: error,
-        variant: 'destructive',
-      });
-      onFailure?.(error);
-    },
+          onFailed: (error) => {
+            toast({
+              title: 'Payment Failed',
+              description: error,
+              variant: 'warning',
+            });
+            onFailure?.(error);    },
   });
 
-  const { status } = usePaymentStore();
+  const { payment } = usePaymentStore();
+  const status = payment?.status;
 
   // Start polling on mount
   useEffect(() => {
@@ -65,7 +65,8 @@ export function PaymentStatusTracker({
   }, [paymentId, startPolling, stopPolling]);
 
   const getStepState = (step: 'pending' | 'processing' | 'completed' | 'failed') => {
-    const currentStepIndex = ['pending', 'processing', 'completed', 'failed'].indexOf(status);
+    const currentStatus = status || 'pending';
+    const currentStepIndex = ['pending', 'processing', 'completed', 'failed'].indexOf(currentStatus);
     const stepIndex = ['pending', 'processing', 'completed', 'failed'].indexOf(step);
     
     if (status === 'failed') {

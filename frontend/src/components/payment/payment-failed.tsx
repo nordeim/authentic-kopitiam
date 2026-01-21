@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { ExclamationCircleIcon, ArrowUturnLeftIcon, ArrowPathIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
-import { cn } from '@/lib/utils';
 
 export interface PaymentFailedProps {
   orderId: string;

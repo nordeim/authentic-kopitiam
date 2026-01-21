@@ -6,10 +6,25 @@ Awesome job on your meticulous review, analysis and planning. Please keep up the
 
 ---
 
-please meticulously review @AGENT_BRIEF.md , @CLAUDE.md , @README.md , @MASTER_EXECUTION_PLAN.md and @VALIDATED_EXECUTION_PLAN.md to have a deep understanding of the WHAT, WHY and HOW of the project and its codebase design and architecture. Next meticulously and systematically validate your deep understanding of the project and its codebase against the actual codebase. You need to confirm all your findings and assumptions with codebase supplemented by web searches if necessary. Then meticulously record down, save/stage your validated deep understanding as a markdown document `Comprehensive_Validated_Project_Understanding.md`. This document will serve as a reference handbook to initialize and properly orientate new developer or new AI coding agent so that they too will have the same deep understanding to be able to handle new PRs independently and with minimal error. Add to the document, any coding or logic errors or inconsistencies and conflicts after re-validation if found. Also add to the document, recommendations for improvements and next steps as Roadmap.
+please meticulously review @AGENT_BRIEF.md , @CLAUDE.md , @README.md , @Comprehensive_Validated_Project_Understanding.md , @MASTER_EXECUTION_PLAN.md and @VALIDATED_EXECUTION_PLAN.md to have a deep understanding of the WHAT, WHY and HOW of the project and its codebase design and architecture. Next meticulously and systematically validate your deep understanding of the project and its codebase against the actual codebase. You need to confirm all your findings and assumptions with codebase supplemented by web searches if necessary. Then meticulously record down, save/stage your validated deep understanding as a markdown document `AGENT_Comprehensive_Validated_Project_Understanding.md`. This document will serve as a reference handbook to initialize and properly orientate new developer or new AI coding agent so that they too will have the same deep understanding to be able to handle new PRs independently and with minimal error. Add to the document, any coding or logic errors or inconsistencies and conflicts after re-validation if found. Also add to the document, recommendations for improvements and next steps as Roadmap.
 
 Start by meticulously review the project's documentation and codebase to validate the project's state, architecture, and compliance mandates. Carefully and systematically explore the frontend and backend directories to confirm the existence of key components and services mentioned in the status reports.
 
+---
+
+please meticulously review @AGENT_BRIEF.md , @CLAUDE.md , @README.md , @Comprehensive_Validated_Project_Understanding.md , @MASTER_EXECUTION_PLAN.md and @VALIDATED_EXECUTION_PLAN.md to have a deep understanding of the WHAT, WHY and HOW of the project and its codebase design and architecture. Next meticulously and systematically validate your deep understanding of the project and its codebase against the actual codebase. You need to confirm all your findings and assumptions with codebase supplemented by web searches if necessary. Then meticulously record down, save/stage your validated deep understanding as a markdown document `My_Comprehensive_Validated_Project_Understanding.md`. This document will serve as a reference handbook to initialize and properly orientate new developer or new AI coding agent so that they too will have the same deep understanding to be able to handle new PRs independently and with minimal error. Add to the document, any coding or logic errors or inconsistencies and conflicts after re-validation if found. Also add to the document, recommendations for improvements and next steps as Roadmap.
+
+Start by meticulously review the project's documentation and codebase to validate the project's state, architecture, and compliance mandates. Carefully and systematically explore the frontend and backend directories to confirm the existence of key components and services mentioned in the status reports.
+
+---
+
+@AGENT_BRIEF.md, @CLAUDE.md, @README.md, @Project_Architecture_Document.md, @Project_Architecture_Document_QUICKSTART.md, Comprehensive_Validated_Project_Understanding.md 
+
+---
+
+please meticulously review @AGENT_BRIEF.md , @CLAUDE.md , @README.md , @MASTER_EXECUTION_PLAN.md and @VALIDATED_EXECUTION_PLAN.md to have a deep understanding of the WHAT, WHY and HOW of the project and its codebase design and architecture. Next meticulously and systematically validate your deep understanding of the project and its codebase against the actual codebase. You need to confirm all your findings and assumptions with codebase supplemented by web searches if necessary. Then meticulously record down, save/stage your validated deep understanding as a markdown document `Comprehensive_Validated_Project_Understanding.md`. This document will serve as a reference handbook to initialize and properly orientate new developer or new AI coding agent so that they too will have the same deep understanding to be able to handle new PRs independently and with minimal error. Add to the document, any coding or logic errors or inconsistencies and conflicts after re-validation if found. Also add to the document, recommendations for improvements and next steps as Roadmap.
+
+Start by meticulously review the project's documentation and codebase to validate the project's state, architecture, and compliance mandates. Carefully and systematically explore the frontend and backend directories to confirm the existence of key components and services mentioned in the status reports.
 
 ---
 
@@ -24,6 +39,14 @@ Awesome job on your meticulous review, analysis and planning. Please keep up the
 yes, please meticulously proceed to execute Phase 1.
 
 yes, please meticulously proceed with your next step.
+
+---
+
+Awesome job on your meticulous analysis, planning and execution. Please keep up the good work in your rigorous and meticulous approach to planning and execution. Now, please meticulously review the following frontend build error, then review and validate against the actual codebase to find out the actual root cause. Then plan and fix the error. 
+
+---
+
+please meticulously review what you were doing before you stopped, then meticulously resume from there.
 
 ---
 

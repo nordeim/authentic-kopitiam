@@ -25,70 +25,8 @@ export interface StripeAppearance {
     borderRadiusSm: string;
   };
   rules: {
-    '.Block'?: {
-      backgroundColor?: string;
-      borderColor?: string;
-      boxShadow?: string;
-    };
-    '.Input'?: {
-      backgroundColor?: string;
-      borderColor?: string;
-      borderRadius?: string;
-      color?: string;
-      fontFamily?: string;
-      fontSize?: string;
-      fontWeight?: string;
-      padding?: string;
-      ':focus'?: {
-        borderColor?: string;
-        boxShadow?: string;
-      };
-      ':hover'?: {
-        borderColor?: string;
-      };
-    };
-    '.Label'?: {
-      color?: string;
-      fontFamily?: string;
-      fontSize?: string;
-      fontWeight?: string;
-    };
-    '.Tab'?: {
-      borderColor?: string;
-      color?: string;
-      ':hover'?: {
-        color?: string;
-      };
-    };
-    '.Tab--selected'?: {
-      backgroundColor?: string;
-      borderColor?: string;
-      color?: string;
-      iconColor?: string;
-    };
-    '.Error'?: {
-      color?: string;
-      fontFamily?: string;
-      fontSize?: string;
-      fontWeight?: string;
-      iconColor?: string;
-    };
-    '.Error--text'?: {
-      color?: string;
-    };
-    '.Checkbox'?: {
-      backgroundColor?: string;
-      borderColor?: string;
-      ':checked'?: {
-        backgroundColor?: string;
-        color?: string;
-      };
-    };
-    '.CheckboxInput'?: {
-      ':focus'?: {
-        borderColor?: string;
-        boxShadow?: string;
-      };
+    [selector: string]: {
+      [cssPropertyName: string]: string;
     };
   };
 }
@@ -128,13 +66,13 @@ export const retroAppearance: StripeAppearance = {
       fontSize: '16px',
       fontWeight: '500',
       padding: '12px 16px',
-      ':focus': {
-        borderColor: '#FF6B4A',           // sunrise-coral on focus
-        boxShadow: '0 0 0 3px rgba(255, 107, 74, 0.1)', // subtle glow
-      },
-      ':hover': {
-        borderColor: '#FFBE4F',         // golden-hour on hover
-      },
+    },
+    '.Input:focus': {
+      borderColor: '#FF6B4A',           // sunrise-coral on focus
+      boxShadow: '0 0 0 3px rgba(255, 107, 74, 0.1)', // subtle glow
+    },
+    '.Input:hover': {
+      borderColor: '#FFBE4F',         // golden-hour on hover
     },
     '.Label': {
       color: '#3D2317',                    // espresso-dark
@@ -145,9 +83,9 @@ export const retroAppearance: StripeAppearance = {
     '.Tab': {
       borderColor: '#E5D7C3',
       color: '#8C5E4A',                    // terracotta-medium
-      ':hover': {
-        color: '#FF6B4A',                 // sunrise-coral
-      },
+    },
+    '.Tab:hover': {
+      color: '#FF6B4A',                 // sunrise-coral
     },
     '.Tab--selected': {
       backgroundColor: '#FF6B4A',        // sunrise-coral
@@ -168,16 +106,14 @@ export const retroAppearance: StripeAppearance = {
     '.Checkbox': {
       backgroundColor: '#FFFFFF',         // pure white
       borderColor: '#E5D7C3',              // muted-latte
-      ':checked': {
-        backgroundColor: '#FF6B4A',      // sunrise-coral when checked
-        color: '#FFFFFF',                   // white checkmark
-      },
     },
-    '.CheckboxInput': {
-      ':focus': {
-        borderColor: '#FF6B4A',         // sunrise-coral
-        boxShadow: '0 0 0 3px rgba(255, 107, 74, 0.1)', // subtle glow
-      },
+    '.Checkbox:checked': {
+      backgroundColor: '#FF6B4A',      // sunrise-coral when checked
+      color: '#FFFFFF',                   // white checkmark
+    },
+    '.CheckboxInput:focus': {
+      borderColor: '#FF6B4A',         // sunrise-coral
+      boxShadow: '0 0 0 3px rgba(255, 107, 74, 0.1)', // subtle glow
     },
   },
 };
@@ -202,9 +138,9 @@ export const retroNightAppearance: StripeAppearance = {
       backgroundColor: '#2C1E14',        // darker espresso
       borderColor: '#5C4A3A',
       color: '#FFF5E6',                    // latte-cream
-      ':focus': {
-        borderColor: '#FFBE4F',          // golden-hour
-      },
+    },
+    '.Input:focus': {
+      borderColor: '#FFBE4F',          // golden-hour
     },
     '.Label': {
       color: '#FFF5E6',                    // latte-cream

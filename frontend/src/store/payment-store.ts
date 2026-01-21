@@ -15,6 +15,7 @@ export interface Payment {
   amount: number; // DECIMAL(10,4) from backend
   paynow_qr_data?: string;
   provider_payment_id?: string;
+  failure_reason?: string;
   created_at: string;
   updated_at: string;
 }
@@ -38,6 +39,7 @@ export interface PaymentState {
   // Actions
   selectPaymentMethod: (method: PaymentMethod) => void;
   setPayment: (payment: Payment) => void;
+  setStatus: (status: PaymentStatus) => void;
   setProcessing: (isProcessing: boolean) => void;
   setPolling: (isPolling: boolean) => void;
   setQrCodeUrl: (url: string | null) => void;
@@ -79,6 +81,13 @@ export const usePaymentStore = create<PaymentState>()(
 
       setPayment: (payment: Payment) => {
         set({ payment, isProcessing: false });
+      },
+
+      setStatus: (status: PaymentStatus) => {
+        const currentPayment = get().payment;
+        if (currentPayment) {
+          set({ payment: { ...currentPayment, status } });
+        }
       },
 
       setProcessing: (isProcessing: boolean) => {

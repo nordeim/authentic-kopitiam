@@ -6,9 +6,11 @@ import { PaymentMethodSelector } from '@/components/payment/payment-method-selec
 import { PayNowQRDisplay } from '@/components/payment/paynow-qr-display';
 import { StripePaymentForm } from '@/components/payment/stripe-payment-form';
 import { PaymentStatusTracker } from '@/components/payment/payment-status-tracker';
+import { PaymentSuccess } from '@/components/payment/payment-success';
+import { PaymentFailed } from '@/components/payment/payment-failed';
 import { PaymentRecoveryModal } from '@/components/payment/payment-recovery-modal';
 import { OfflineModeFallback, PaymentMethodUnavailableFallback } from '@/lib/graceful-payment-fallback';
-import { usePaymentStore, paymentStore } from '@/store/payment-store';
+import { usePaymentStore } from '@/store/payment-store';
 import { useCartStore } from '@/store/cart-store';
 import { paymentApi } from '@/lib/api/payment-api';
 import { toast } from '@/components/ui/toast-notification';
@@ -28,30 +30,19 @@ export type PaymentFlowState =
   | 'error'              // Error state with retry options
   | 'offline-mode';       // When payment services are down
 
-interface PaymentFlowStateMachine {
-  currentState: PaymentFlowState;
-  paymentMethod: 'paynow' | 'stripe' | null;
-  paymentId: string | null;
-  qrCodeUrl: string | null;
-  clientSecret: string | null;
-  error: string | null;
-  isLoading: boolean;
-}
-
-export default function PaymentPage() {
+function PaymentContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId') || '';
   const resumeParam = searchParams.get('resume') === 'true';
   
   // State management
-  const { items, getTotal, clearCart } = useCartStore();
-  const { payment, setPayment, setError, reset } = usePaymentStore();
+  const { getTotal, clearCart } = useCartStore();
+  const { payment, setPayment, setError, error, reset, setQrCodeUrl, setClientSecret, qrCodeUrl, clientSecret } = usePaymentStore();
   
   // Local state
   const [state, setState] = React.useState<PaymentFlowState>('method-selection');
   const [selectedMethod, setSelectedMethod] = React.useState<'paynow' | 'stripe' | null>(null);
   const [showRecoveryModal, setShowRecoveryModal] = React.useState(false);
-  const [isProcessing, setIsProcessing] = React.useState(false);
   const [fallbackMode, setFallbackMode] = React.useState<{
     type: 'offline' | 'method-unavailable';
     method?: 'paynow' | 'stripe';
@@ -59,48 +50,67 @@ export default function PaymentPage() {
 
   const totalAmount = getTotal();
 
-  // Calculate GST
-  const gstAmount = totalAmount * 0.09;
-  const subtotal = totalAmount - gstAmount;
+  // Resume existing payment
+  const handleResumePayment = React.useCallback(async (method: 'paynow' | 'stripe') => {
+    if (!payment) return;
 
-  // Initialize payment flow on mount
-  React.useEffect(() => {
-    const initializePaymentFlow = async () => {
+    setSelectedMethod(method);
+    
+    if (method === 'paynow' && payment.paynow_qr_data) {
+      setQrCodeUrl(payment.paynow_qr_data);
+    } else if (method === 'stripe' && payment.provider_payment_id) {
+      // Recreate client_secret from existing payment_intent
       try {
-        // Check if we should show recovery modal
-        if (resumeParam && orderId && shouldShowRecoveryModal(orderId)) {
-          setShowRecoveryModal(true);
-          return;
-        }
-
-        // Check payment services health
-        const health = await paymentApi.checkPaymentMethodAvailability();
-        
-        if (!health.allAvailable) {
-          if (!health.paynow && !health.stripe) {
-            setFallbackMode({ type: 'offline' });
-            setState('offline-mode');
-          } else if (selectedMethod && !health[selectedMethod]) {
-            setFallbackMode({ 
-              type: 'method-unavailable', 
-              method: selectedMethod 
-            });
-            setState('error');
-          }
-        }
-
-        // If we have a stored payment, resume it
-        if (payment && ['pending', 'processing'].includes(payment.status)) {
-          handleResumePayment(payment.payment_method as 'paynow' | 'stripe');
-        }
+        const response = await paymentApi.createStripePayment(orderId, totalAmount);
+        setClientSecret(response.client_secret ?? null);
       } catch (error) {
-        console.error('Failed to initialize payment flow:', error);
-        const paymentError = paymentErrorHandler.handleNetworkError(error, 'initialization');
-        setError(paymentError.message);
-        setState('error');
+        setClientSecret(null); // Will show retry option
       }
-    };
+    }
+    
+    setState('processing');
+  }, [payment, orderId, totalAmount, setQrCodeUrl, setClientSecret]);
 
+  // Initialize payment flow
+  const initializePaymentFlow = React.useCallback(async () => {
+    try {
+      // Check if we should show recovery modal
+      if (resumeParam && orderId && shouldShowRecoveryModal(orderId)) {
+        setShowRecoveryModal(true);
+        return;
+      }
+
+      // Check payment services health
+      const health = await paymentApi.checkPaymentMethodAvailability();
+      const allAvailable = health.paynow && health.stripe;
+      
+      if (!allAvailable) {
+        if (!health.paynow && !health.stripe) {
+          setFallbackMode({ type: 'offline' });
+          setState('offline-mode');
+        } else if (selectedMethod && !health[selectedMethod]) {
+          setFallbackMode({ 
+            type: 'method-unavailable', 
+            method: selectedMethod 
+          });
+          setState('error');
+        }
+      }
+
+      // If we have a stored payment, resume it
+      if (payment && ['pending', 'processing'].includes(payment.status)) {
+        await handleResumePayment(payment.payment_method as 'paynow' | 'stripe');
+      }
+    } catch (error) {
+      console.error('Failed to initialize payment flow:', error);
+      const paymentError = paymentErrorHandler.handleNetworkError(error, 'initialization');
+      setError(paymentError.message);
+      setState('error');
+    }
+  }, [orderId, resumeParam, payment, selectedMethod, setError, handleResumePayment]);
+
+  // Initial load effect
+  React.useEffect(() => {
     // Only initialize if we have an order
     if (orderId) {
       initializePaymentFlow();
@@ -108,11 +118,11 @@ export default function PaymentPage() {
       toast({
         title: 'Missing Order',
         description: 'No order ID provided. Please return to cart.',
-        variant: 'destructive',
+        variant: 'warning',
       });
       window.location.href = '/cart';
     }
-  }, [orderId, resumeParam]);
+  }, [orderId, initializePaymentFlow]);
 
   // Auto-advance based on payment state
   React.useEffect(() => {
@@ -137,36 +147,31 @@ export default function PaymentPage() {
 
   // Initialize payment (create backend record)
   const handleInitializePayment = async (method: 'paynow' | 'stripe') => {
-    setIsProcessing(true);
     setState('payment-init');
 
     try {
       const existingPayment = payment?.payment_method === method ? payment : null;
       
-      // Use existing payment if same method, otherwise create new
-      let newPayment;
-      if (existingPayment) {
-        newPayment = existingPayment;
-      } else {
-        const response = method === 'paynow'
-          ? await paymentApi.createPayNowPayment(orderId)
-          : await paymentApi.createStripePayment(orderId, totalAmount);
+      const newPayment = existingPayment || (method === 'paynow'
+        ? await paymentApi.createPayNowPayment(orderId)
+        : await paymentApi.createStripePayment(orderId, totalAmount));
 
-        newPayment = response;
-      }
+      const paymentId = 'id' in newPayment ? newPayment.id : newPayment.payment_id;
 
       setPayment({
-        id: newPayment.payment_id,
+        id: paymentId,
         order_id: orderId,
-        payment_method: method,
+        payment_method: method === 'stripe' ? 'stripe_card' : method,
         status: 'pending',
-        amount: totalAmount.toString(),
+        amount: totalAmount,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
 
       // Store QR code or client secret
-      if (method === 'paynow' && newPayment.qr_code_url) {
+      if ('qr_code_url' in newPayment && newPayment.qr_code_url) {
         setQrCodeUrl(newPayment.qr_code_url);
-      } else if (method === 'stripe' && newPayment.client_secret) {
+      } else if ('client_secret' in newPayment && newPayment.client_secret) {
         setClientSecret(newPayment.client_secret);
       }
 
@@ -177,30 +182,7 @@ export default function PaymentPage() {
       const paymentError = paymentErrorHandler.handleStripeError(error);
       setError(paymentError.message);
       setState('error');
-    } finally {
-      setIsProcessing(false);
     }
-  };
-
-  // Resume existing payment
-  const handleResumePayment = async (method: 'paynow' | 'stripe') => {
-    if (!payment) return;
-
-    setSelectedMethod(method);
-    
-    if (method === 'paynow' && payment.paynow_qr_data) {
-      setQrCodeUrl(payment.paynow_qr_data);
-    } else if (method === 'stripe' && payment.provider_payment_id) {
-      // Recreate client_secret from existing payment_intent
-      try {
-        const response = await paymentApi.createStripePayment(orderId, totalAmount);
-        setClientSecret(response.client_secret);
-      } catch (error) {
-        setClientSecret(null); // Will show retry option
-      }
-    }
-    
-    setState('processing');
   };
 
   // Handle payment completion
@@ -223,7 +205,7 @@ export default function PaymentPage() {
           <PaymentMethodSelector
             orderId={orderId}
             amount={totalAmount}
-            onContinue={(method) => handleInitializePayment(method)}
+            onContinue={(method: 'paynow' | 'stripe') => handleInitializePayment(method)}
             onCancel={() => window.location.href = '/cart'}
           />
         );
@@ -304,7 +286,7 @@ export default function PaymentPage() {
               <PaymentSuccess
                 orderId={orderId}
                 paymentId={payment.id}
-                amount={parseFloat(payment.amount)}
+                amount={payment.amount}
                 onTrackOrder={() => window.location.href = `/orders/${orderId}`}
                 onShareOrder={() => {
                   // Share logic handled by PaymentSuccess component
@@ -497,5 +479,17 @@ export default function PaymentPage() {
         hasStoredPayment={!!payment}
       />
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[rgb(255,245,230)] to-[#FFFDF6] py-12 flex items-center justify-center">
+        <LoaderIcon className="w-12 h-12 text-[rgb(255,107,74)] animate-spin" />
+      </div>
+    }>
+      <PaymentContent />
+    </React.Suspense>
   );
 }

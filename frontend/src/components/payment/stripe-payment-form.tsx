@@ -4,7 +4,6 @@ import * as React from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
-  CardElement,
   useStripe,
   useElements,
   PaymentElement,
@@ -65,7 +64,7 @@ interface StripeFormContentProps {
 function StripeFormContent({ orderId, amount, onSuccess, onError }: StripeFormContentProps) {
   const stripe = useStripe();
   const elements = useElements();
-  const { setProcessing, setPayment } = usePaymentStore();
+  const { setProcessing } = usePaymentStore();
 
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -89,7 +88,7 @@ function StripeFormContent({ orderId, amount, onSuccess, onError }: StripeFormCo
     // Validate form
     const { error: formError } = await elements.submit();
     if (formError) {
-      setErrorMessage(formError.message);
+      setErrorMessage(formError.message || 'An unknown error occurred');
       onError(formError.message || 'Invalid payment details');
       return;
     }
@@ -148,7 +147,7 @@ function StripeFormContent({ orderId, amount, onSuccess, onError }: StripeFormCo
       toast({
         title: 'Payment Failed',
         description: errorMsg,
-        variant: 'destructive',
+        variant: 'warning',
       });
     } finally {
       setIsProcessing(false);

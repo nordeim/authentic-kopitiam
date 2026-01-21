@@ -5,7 +5,6 @@ import { RetroDialog, RetroDialogContent, RetroDialogHeader, RetroDialogTitle, R
 import { RetroButton } from '@/components/ui/retro-button';
 import { usePaymentStore } from '@/store/payment-store';
 import { toast } from '@/components/ui/toast-notification';
-import { cn } from '@/lib/utils';
 
 // Icons
 import { ArrowUturnLeftIcon, DocumentDuplicateIcon, CreditCardIcon, QrCodeIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
@@ -21,7 +20,6 @@ export function PaymentRecoveryModal({
   open,
   onOpenChange,
   orderId,
-  hasStoredPayment = false,
 }: PaymentRecoveryModalProps) {
   const { payment } = usePaymentStore();
   
@@ -30,7 +28,7 @@ export function PaymentRecoveryModal({
       toast({
         title: 'No Payment Found',
         description: 'Unable to resume previous payment',
-        variant: 'destructive',
+        variant: 'warning',
       });
       onOpenChange(false);
       return;
