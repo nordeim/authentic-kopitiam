@@ -15,10 +15,12 @@ use App\Http\Controllers\Api\AuthController;
 Route::prefix('v1')->group(function () {
 
   // ══════════════════════════════════════════════════════════════════
-  // AUTHENTICATION ROUTES (Public)
+  // AUTHENTICATION ROUTES (Public with rate limiting)
   // ══════════════════════════════════════════════════════════════════
-  Route::post('register', [AuthController::class, 'register']);
-  Route::post('login', [AuthController::class, 'login']);
+  Route::post('register', [AuthController::class, 'register'])
+    ->middleware('throttle:auth-register');
+  Route::post('login', [AuthController::class, 'login'])
+    ->middleware('throttle:auth-login');
 
   // ══════════════════════════════════════════════════════════════════
   // PUBLIC ROUTES (No auth required)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuthAuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +13,13 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    protected AuthAuditService $auditService;
+
+    public function __construct(AuthAuditService $auditService)
+    {
+        $this->auditService = $auditService;
+    }
+
     /**
      * Register a new user.
      */
@@ -39,6 +47,9 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
+        // Audit log: Registration
+        $this->auditService->logRegistration($user, $request);
+
         return response()->json([
             'user' => [
                 'id' => $user->id,
@@ -64,6 +75,9 @@ class AuthController extends Controller
         $user = User::where('email', $validated['email'])->first();
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
+            // Audit log: Failed login attempt
+            $this->auditService->logFailedLogin($validated['email'], $request);
+
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
@@ -73,6 +87,9 @@ class AuthController extends Controller
         $user->tokens()->delete();
 
         $token = $user->createToken('auth-token')->plainTextToken;
+
+        // Audit log: Successful login
+        $this->auditService->logLogin($user, $request);
 
         return response()->json([
             'user' => [
@@ -91,8 +108,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
+        $user = $request->user();
+
+        // Audit log: Logout
+        $this->auditService->logLogout($user, $request);
+
         // Revoke current token
-        $request->user()->currentAccessToken()->delete();
+        $user->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Successfully logged out',
@@ -130,6 +152,9 @@ class AuthController extends Controller
 
         // Create new token
         $token = $user->createToken('auth-token')->plainTextToken;
+
+        // Audit log: Token refresh
+        $this->auditService->logTokenRefresh($user, $request);
 
         return response()->json([
             'token' => $token,
