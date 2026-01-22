@@ -146,6 +146,42 @@ Use this taxonomy to quickly classify the cause.
 - Use `Button` / `SheetTrigger`.
 - Ensure focus styles exist: `focus-visible:outline-none focus-visible:ring-2 ...`
 
+### Class H — Click-outside handler race condition
+**Signature:**
+- Menu briefly opens then immediately closes (or never visibly opens)
+- Click on trigger sets state true, but document listener sets it false
+- `aria-expanded` may flicker or stay false
+- Console logs show state toggling true→false in rapid succession
+
+**Root Cause:**
+Document-level click handlers fire after component handlers due to event bubbling. If the click-outside logic doesn't exclude the trigger element, it immediately undoes the toggle.
+
+```tsx
+// Problematic pattern
+document.addEventListener('click', (e) => {
+  if (!menuElement.contains(e.target)) {
+    setIsOpen(false); // Fires when toggle button is clicked!
+  }
+});
+```
+
+**Fix:**
+- Exclude trigger element from click-outside detection
+- Use a ref or query selector to identify the trigger
+
+```tsx
+const handleClickOutside = (e: MouseEvent) => {
+  const target = e.target as HTMLElement;
+  const menu = document.getElementById('mobile-menu');
+  const trigger = document.querySelector('.menu-toggle');
+  
+  // Check BOTH menu AND trigger
+  if (menu && !menu.contains(target) && !trigger?.contains(target)) {
+    setIsOpen(false);
+  }
+};
+```
+
 ---
 
 ## 4) 5‑Minute Diagnostic Decision Tree (DevTools + React)
@@ -173,6 +209,15 @@ If hidden due to breakpoint classes:
 
 If state never changes:
 - Class F (JS wiring), or trigger not connected.
+
+### Step 3b — Does the menu open then immediately close?
+- Add `console.log('open')` and `console.log('close')` to handlers
+- Watch for rapid "open" → "close" sequence
+- Check if document-level click listener is firing
+
+If opens then closes:
+- Class H (click-outside race condition)
+- Verify trigger is excluded from click-outside detection
 
 ### Step 4 — Is the menu content present but clipped?
 - Find `SheetContent`
@@ -359,6 +404,28 @@ Result: works in dev, disappears in prod.
 ```
 Result: overlays (Sheet) may appear behind or feel broken.
 
+### Anti‑Pattern 6 — Click-outside closes toggle button clicks
+```tsx
+// Document click handler that doesn't exclude trigger
+useEffect(() => {
+  const handleClick = (e: MouseEvent) => {
+    if (!menuRef.current?.contains(e.target as Node)) {
+      setIsOpen(false); // Closes even when toggle was clicked!
+    }
+  };
+  document.addEventListener('click', handleClick);
+  return () => document.removeEventListener('click', handleClick);
+}, []);
+```
+Result: menu never opens because toggle is outside menu element.
+
+**Fix:**
+```tsx
+if (!menuRef.current?.contains(target) && !triggerRef.current?.contains(target)) {
+  setIsOpen(false);
+}
+```
+
 ---
 
 ## 7) Verification Protocol (Tailwind/React/shadcn)
@@ -426,7 +493,11 @@ Also test:
 - Tailwind content globs correct?
 - Dynamic class strings present?
 
-**Classification (A–G):**
+**Step 3b: Opens then immediately closes?**
+- Console shows rapid open→close? (Yes/No)
+- Trigger excluded from click-outside? (Yes/No)
+
+**Classification (A–H):**
 
 **Fix applied:**
 
@@ -448,4 +519,71 @@ Use this as a “skills” rule set for any Tailwind/React/shadcn mockup.
 - Mobile menu must not clip items: use `overflow-y-auto`, avoid `justify-center` for lists.
 - Ensure keyboard UX: trigger must be a button; Escape closes; focus returns.
 - Close the Sheet on link click and on route change.
+- If using document-level click-outside detection, always exclude the trigger element.
 - Before final output, run the verification protocol and report it.
+
+---
+
+## 10) Case Study: Click-Outside Race Condition (Class H)
+
+**Project:** Morning Brew Collective  
+**Date:** January 2026  
+**Stack:** Next.js 15, React, Custom CSS (not shadcn Sheet)
+
+### Symptom
+Mobile hamburger menu visible but clicking it appeared to do nothing. Menu never opened.
+
+### Initial Hypothesis
+Assumed static HTML issue — JavaScript not hydrating properly.
+
+### Investigation
+1. Examined rendered HTML: menu element existed with `transform: translateX(100%)`
+2. Reviewed `header.tsx`: toggle button correctly called `setIsMobileMenuOpen(true)`
+3. Reviewed `mobile-menu.tsx`: component used `isOpen` prop for transform
+4. **Key finding:** `handleClickOutside` was attached to `document` on mount
+
+### Root Cause
+```tsx
+const handleClickOutside = (e: MouseEvent) => {
+  const mobileMenu = document.getElementById('mobile-menu');
+  if (mobileMenu && !mobileMenu.contains(e.target)) {
+    setIsMobileMenuOpen(false); // ← Problem!
+  }
+};
+
+useEffect(() => {
+  document.addEventListener('click', handleClickOutside);
+  // ...
+}, []);
+```
+
+**Event sequence on button click:**
+1. User clicks `.menu-toggle` button
+2. React `onClick` fires → `setIsMobileMenuOpen(true)`
+3. Click event bubbles to `document`
+4. `handleClickOutside` fires
+5. Button is NOT inside `#mobile-menu`
+6. `setIsMobileMenuOpen(false)` → menu closes immediately
+
+### Fix Applied
+```tsx
+const handleClickOutside = (e: MouseEvent) => {
+  const target = e.target as HTMLElement;
+  const mobileMenu = document.getElementById('mobile-menu');
+  const menuToggle = document.querySelector('.menu-toggle');
+  
+  // Exclude BOTH menu AND toggle button
+  if (mobileMenu && !mobileMenu.contains(target) && !menuToggle?.contains(target)) {
+    setIsMobileMenuOpen(false);
+  }
+};
+```
+
+### Lessons Learned
+1. **Always log both open and close handlers** when debugging state issues
+2. **Document-level listeners fire after component handlers** due to bubbling
+3. **Click-outside logic must exclude trigger elements**, not just the menu itself
+4. This bug is invisible in static HTML inspection — the DOM is correct, the race condition is temporal
+
+### Classification
+**Class H** — Click-outside handler race condition
