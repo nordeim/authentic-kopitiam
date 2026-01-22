@@ -1,6 +1,5 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, FileText, Printer, Mail, MapPin } from 'lucide-react';
 import { Order, OrderStatus } from '@/types/api';
@@ -50,6 +49,8 @@ const MOCK_ORDER_DETAIL: Order = {
     created_at: '',
     updated_at: '',
     deleted_at: null,
+    latitude: 1.2849,  // Tiong Bahru coordinates
+    longitude: 103.8354,
   },
   items: [
     {
@@ -118,9 +119,9 @@ const statusColors: Record<OrderStatus, string> = {
   cancelled: 'bg-mocha-medium/20 text-mocha-medium border-mocha-medium/30',
 };
 
-export default function OrderDetailsPage({ params }: { params: Promise<{ orderId: string }> }) {
+export default function OrderDetailsPage({ params: _params }: { params: Promise<{ orderId: string }> }) {
   // Unwrap params using React.use()
-  const { orderId } = use(params);
+  // const { orderId } = use(params); // TODO: Use orderId for API fetch
   
   // In a real app, fetch data using orderId
   const order = MOCK_ORDER_DETAIL;
