@@ -1,413 +1,348 @@
-CLAUDE.md - Developer Briefing & Project Context
-Project: Morning Brew Collective
-Type: Singapore-First Headless Commerce Platform
-Aesthetic: 1970s Retro Kopitiam with Avant-Garde Minimalism
-Status: Phase 5 (Payment Integration) 100% COMPLETE
+# CLAUDE.md - Agent Initialization Handbook
+**Project:** Morning Brew Collective  
+**Type:** Singapore-First Headless Commerce Platform  
+**Aesthetic:** 1970s Retro Kopitiam × Avant-Garde Minimalism  
+**Last Validated:** January 23, 2026
+
 ---
-1. Executive Summary
-This project is not a generic e-commerce site; it is a digital resurrection of a heritage kopitiam. We combine a "Retro-Futuristic" aesthetic (warm colors, rounded corners, nostalgic typography) with enterprise-grade transaction capabilities (real-time inventory, Singapore compliance).
-Core Philosophy:
-*   Anti-Generic: We reject "AI slop" and standard Bootstrap grids. Every pixel must serve the "Sunrise at the Kopitiam" narrative.
-*   Meticulous Execution: We validate every step before implementation. We do not guess; we verify.
-*   BFF Architecture: 
-    *   Frontend (Next.js 15): The "Soul" – Handles UX, aesthetics, and micro-interactions.
-    *   Backend (Laravel 12): The "Truth" – Handles data integrity, inventory locks, and compliance logic.
+
+## 🚀 QUICK START (Read This First)
+
+### 30-Second Orientation
+This is a **BFF (Backend-for-Frontend)** e-commerce platform for a Singapore heritage kopitiam:
+- **Backend (Laravel 12)** = "The Truth" → Data integrity, inventory, compliance
+- **Frontend (Next.js 15)** = "The Soul" → UX, aesthetics, micro-interactions
+- **Core Mandate:** All financial values use **DECIMAL(10,4)** for Singapore GST (9%) precision
+
+### First Actions Checklist
+```bash
+# 1. Verify services are running
+make status
+
+# 2. Run backend tests  
+make test-backend
+
+# 3. Check frontend build
+cd frontend && npm run build
+```
+
+### Critical Files to Read
+| Priority | File | Purpose |
+|----------|------|---------|
+| 1 | `CLAUDE.md` (this file) | Agent initialization |
+| 2 | `static_landing_page_mockup.html` | Authoritative design reference |
+| 3 | `MASTER_EXECUTION_PLAN.md` | 6-phase technical roadmap |
+| 4 | `backend/app/Services/` | Core business logic |
+| 5 | `frontend/src/components/ui/retro-*.tsx` | Design system components |
+
 ---
-2. Technology Stack & Conventions
-Frontend (/frontend)
-*   Framework: Next.js 15 (App Router), React 19.
-*   Language: TypeScript 5.4 (Strict Mode).
-*   Styling: Tailwind CSS 4.0 + CSS Variables (tokens.css).
-*   Components: DO NOT use raw Shadcn/Radix primitives. You MUST use the retro-* wrappers (e.g., retro-button.tsx) located in src/components/ui/ to maintain the 70s aesthetic.
-*   State: Zustand for client state (Cart, Filters, Payment).
-*   Testing: Vitest (planned), Playwright (planned) - infrastructure being built.
-Backend (/backend)
-*   Framework: Laravel 12 (API-First).
-*   Language: PHP 8.3.
-*   Database: PostgreSQL 16.
-    *   Critical: Financial values (prices, tax) MUST use DECIMAL(10,4) to handle Singapore GST (9%) precision correctly.
-*   Cache/Queue: Redis 7 (Alpine).
-*   Authentication: Laravel Sanctum.
-*   Services: PaymentService, StripeService, PayNowService, InventoryService, PdpaService.
-Infrastructure (/infra, /)
-*   Environment: Docker & Docker Compose (morning-brew-network).
-*   Services: PostgreSQL 16, Redis 7, Laravel Backend, Next.js Frontend.
-*   Reverse Proxy: Nginx (planned for production).
-*   Local Dev: Mailpit (Port 8025) for email capture.
----
-3. Current Project State (As of January 20, 2026)
-✅ Phase 5 Complete - Payment Integration & Decimal Precision
-Backend (Payment Domain):
-*   Services: PaymentService (382 lines), StripeService (238 lines), PayNowService (244 lines), InventoryService, PdpaService
-*   Models: Payment (SoftDeletes), PaymentRefund (audit trail), Order, OrderItem, Product, Location, PdpaConsent, Category, User
-*   Controllers: PaymentController (4 endpoints), WebhookController (Stripe & PayNow), OrderController, ProductController, LocationController, PdpaConsentController
-*   APIs: PayNow QR generation, Stripe PaymentIntent, webhooks, refunds, status tracking
-*   Middleware: VerifyOrderOwnership (zero-trust authentication)
-*   Migrations: All tables with DECIMAL(10,4) precision, proper indexes, soft deletes, composite unique constraints.
-*   **Compliance**: Full alignment with Singapore GST (9%) requiring 4 decimal places.
-Frontend (Payment UI):
-*   8 Payment Components: 1,839 lines of production code
-    *   payment-method-selector.tsx (radio cards for PayNow/Card)
-    *   paynow-qr-display.tsx (256x256 QR, timer, save/share)
-    *   stripe-payment-form.tsx (Stripe Elements with retro theme)
-    *   payment-status-tracker.tsx (3s polling, stepper UI)
-    *   payment-success.tsx (confirmation with GST breakdown)
-    *   payment-failed.tsx (error handling with retry)
-    *   payment-recovery-modal.tsx (30-day session persistence)
-    *   payment-method-card.tsx (individual method cards)
-*   Pages: /checkout/payment/, /checkout/confirmation/
-*   State: Payment store with Zustand, localStorage persistence
-*   Design: 100% WCAG AAA compliance, retro-styled Stripe Elements
-*   **Precision**: `decimal-utils.ts` handles high-precision math (x10000 scale) to prevent floating point errors.
-✅ Frontend Foundation Complete - Phase 2
-*   Design System: tokens.css (38 colors, 16 spacing, 6 animations), globals.css, animations.css, patterns.css, accessibility.css
-*   Retro Components: 9 wrappers implemented (retro-dialog, retro-button, retro-dropdown, retro-popover, retro-select, retro-checkbox, retro-switch, retro-progress, retro-slider)
-*   Pages: layout.tsx, page.tsx (Hero), menu/page.tsx, heritage/page.tsx, locations/page.tsx, checkout/payment/page.tsx, checkout/confirmation/page.tsx
-*   Interactive: Cart overlay, toast notifications, filter store, undo/redo (10-action history)
-*   Animations: BeanBounce, SteamRise, SunburstBackground, FloatingCoffeeCup, MapMarker, PolaroidGallery (IntersectionObserver-based)
-✅ Backend Domain Complete - Phase 4
-*   Models: All domain models with proper casts, relationships, scopes
-*   APIs: RESTful endpoints with validation, OpenAPI documentation
-*   Services: Inventory reservation (Redis + PostgreSQL), PDPA pseudonymization, GST calculations
-*   Testing: OrderControllerTest (11/11 passing), ProductControllerTest, LocationControllerTest.
-🐳 Infrastructure - Phase 0
-*   Docker Compose: PostgreSQL 16, Redis 7, Backend, Frontend configured
-*   Makefile: Standard commands (make up, make down, make logs, make migrate, make test)
-*   Database: init.sql with UUID/crypto extensions, proper schema
-📊 Project Statistics
+
+## 📖 WHAT: Project Overview
+
+### Executive Summary
+This is not a generic e-commerce site—it is a **digital resurrection of a heritage kopitiam**. We combine a "Retro-Futuristic" aesthetic (warm colors, rounded corners, nostalgic typography) with enterprise-grade transaction capabilities.
+
+**Anti-Generic Philosophy:**
+- We reject "AI slop" and standard Bootstrap grids
+- Every pixel serves the "Sunrise at the Kopitiam" narrative
+- Use `retro-*` components, never raw Shadcn/Radix primitives
+
+### Technology Stack
+
+#### Backend (`/backend`)
+| Component | Technology | Notes |
+|-----------|------------|-------|
+| Framework | Laravel 12 | API-First |
+| Language | PHP 8.3 | Strict types |
+| Database | PostgreSQL 16 | **DECIMAL(10,4)** for financials |
+| Cache/Queue | Redis 7 | Inventory reservations |
+| Auth | Laravel Sanctum | Token-based |
+
+#### Frontend (`/frontend`)
+| Component | Technology | Notes |
+|-----------|------------|-------|
+| Framework | Next.js 15 | App Router |
+| Language | TypeScript 5.4 | Strict Mode |
+| Styling | Tailwind CSS 4.0 | CSS-first via `tokens.css` |
+| State | Zustand | Cart, Payment, Filters, Toast |
+| Testing | Vitest + Playwright | Unit + E2E |
+
+#### Infrastructure
+| Component | Technology |
+|-----------|------------|
+| Containers | Docker Compose |
+| Services | PostgreSQL, Redis, Backend, Frontend |
+| Email (Dev) | Mailpit (Port 8025) |
+
+### Current Project State (Validated January 23, 2026)
+
 | Metric | Value | Status |
 |--------|-------|--------|
-| Frontend Components | 25+ | ✅ Implemented |
-| Frontend Payment UI | 1,839 lines | ✅ Complete |
-| Backend Services | 5 services | ✅ Complete |
-| Backend Controllers | 6 controllers | ✅ Complete |
+| Backend Services | 6 services, 1,674 lines | ✅ Complete |
+| Backend Controllers | 7 controllers | ✅ Complete |
+| Backend Models | 8 models | ✅ Complete |
 | Database Tables | 9 tables | ✅ Migrated |
-| API Endpoints | 15+ endpoints | ✅ Documented |
-| Test Files | 7 files | ⚠️ PaymentServiceTest pending |
-| Docker Services | 4 services | ✅ Running |
+| Frontend Payment UI | 8 components, 1,836 lines | ✅ Complete |
+| Frontend Retro Wrappers | 9 components | ✅ Complete |
+| Frontend Tests | 1 unit + 2 E2E tests | ⚠️ Expanding |
+| Backend Tests | 8 test files | ✅ Active |
+
 ---
-4. Operational Guide & Commands
-The project uses a Makefile to standardize workflows. Always use these commands.
+
+## 🎯 WHY: Design Rationale
+
+### Core Philosophy
+1. **Meticulous Execution:** Validate every step before implementation
+2. **BFF Architecture:** Backend handles truth, Frontend handles experience
+3. **Singapore Compliance First:** GST precision, PDPA, PayNow, InvoiceNow
+
+### Critical Technical Decisions
+
+#### Decision 1: DECIMAL(10,4) for All Financials
+- **Why:** Singapore GST (9%) requires 4 decimal precision to avoid rounding errors
+- **Implementation:** All migrations use `$table->decimal('column', 10, 4)`
+- **Boundary:** Stripe API conversion to cents happens ONLY in `StripeService`
+
+#### Decision 2: Provider-Specific Service Pattern
+- **Why:** Clean abstraction for payment providers
+- **Implementation:** `PaymentService` orchestrates, `StripeService`/`PayNowService` implement
+- **Benefit:** Easy to add GrabPay, PayPal by creating new Service classes
+
+#### Decision 3: Two-Phase Inventory Reservation
+- **Why:** Prevent overselling during checkout
+- **Implementation:** 
+  1. Redis soft reserve (15-min TTL)
+  2. PostgreSQL commit on payment success
+
+#### Decision 4: Webhook-Driven Status Updates
+- **Why:** Accurate real-time status from payment provider
+- **Implementation:** `WebhookController` → `PaymentService` → Order update
+
+#### Decision 5: Soft Deletes for Payments
+- **Why:** 7-year regulatory retention requirement
+- **Implementation:** `SoftDeletes` trait on `Payment` model
+
+### Singapore Compliance Requirements
+
+| Requirement | Implementation | Status |
+|-------------|----------------|--------|
+| GST (9%) | DECIMAL(10,4) precision | ✅ |
+| PDPA | `pdpa_consents` table with SHA256 pseudonymization | ✅ |
+| PayNow | 256x256 QR, 15-min expiry, manual fallback | ✅ |
+| InvoiceNow | UBL 2.1 XML via `InvoiceService` | ✅ |
+
+---
+
+## 🔧 HOW: Implementation Guide
+
+### File Hierarchy
+
+```
+/backend
+├── app/
+│   ├── Http/Controllers/Api/     # REST endpoints (7 controllers)
+│   │   ├── OrderController.php       # Order CRUD, status transitions
+│   │   ├── PaymentController.php     # Payment initiation, status
+│   │   ├── ProductController.php     # Product catalog
+│   │   ├── LocationController.php    # Store locations
+│   │   ├── WebhookController.php     # Stripe/PayNow webhooks
+│   │   ├── PdpaConsentController.php # PDPA consent tracking
+│   │   └── InvoiceController.php     # Invoice generation
+│   ├── Models/                   # Eloquent models (8 models)
+│   │   ├── Order.php                 # Main order entity
+│   │   ├── OrderItem.php             # Line items
+│   │   ├── Payment.php               # Payment records (SoftDeletes)
+│   │   ├── PaymentRefund.php         # Refund audit trail
+│   │   ├── Product.php               # Menu items
+│   │   ├── Category.php              # Product categories
+│   │   ├── Location.php              # Store locations
+│   │   └── PdpaConsent.php           # Consent records
+│   └── Services/                 # Business logic (6 services)
+│       ├── PaymentService.php        # Orchestrator (410 lines)
+│       ├── StripeService.php         # Stripe API (182 lines)
+│       ├── PayNowService.php         # PayNow QR (244 lines)
+│       ├── InventoryService.php      # Stock management (373 lines)
+│       ├── PdpaService.php           # Consent handling (283 lines)
+│       └── InvoiceService.php        # UBL 2.1 XML (182 lines)
+├── database/migrations/          # 15 migration files
+└── tests/                        # 8 test files
+    ├── Api/                          # Controller tests
+    └── Unit/                         # Service tests
+
+/frontend
+├── src/
+│   ├── app/                      # Next.js App Router pages
+│   │   ├── (shop)/                   # Customer-facing routes
+│   │   │   ├── page.tsx                  # Landing page (Hero)
+│   │   │   ├── menu/page.tsx             # Menu catalog
+│   │   │   ├── heritage/page.tsx         # Brand story
+│   │   │   ├── locations/page.tsx        # Store finder
+│   │   │   └── checkout/                 # Checkout flow
+│   │   │       ├── payment/page.tsx
+│   │   │       └── confirmation/page.tsx
+│   │   └── (dashboard)/              # Admin routes
+│   │       └── admin/
+│   ├── components/
+│   │   ├── ui/                       # Design system (20 files)
+│   │   │   ├── retro-button.tsx          # Primary button
+│   │   │   ├── retro-dialog.tsx          # Modal dialogs
+│   │   │   ├── retro-dropdown.tsx        # Dropdown menus
+│   │   │   └── ... (9 retro-* wrappers)
+│   │   ├── payment/                  # Payment UI (8 components)
+│   │   │   ├── payment-method-selector.tsx
+│   │   │   ├── paynow-qr-display.tsx
+│   │   │   ├── stripe-payment-form.tsx
+│   │   │   └── ...
+│   │   └── animations/               # Motion components (8 files)
+│   ├── store/                    # Zustand stores (6 files)
+│   │   ├── cart-store.ts             # Cart state
+│   │   ├── payment-store.ts          # Payment flow state
+│   │   ├── filter-store.ts           # Product filters
+│   │   ├── toast-store.ts            # Notifications
+│   │   ├── expiration.ts             # TTL utilities
+│   │   └── persistence.ts            # localStorage sync
+│   ├── styles/                   # CSS design system
+│   │   ├── tokens.css                # Design tokens (15KB)
+│   │   ├── globals.css               # Global styles (34KB)
+│   │   ├── animations.css            # Motion (5KB)
+│   │   ├── patterns.css              # Backgrounds (10KB)
+│   │   └── accessibility.css         # WCAG AAA (12KB)
+│   └── lib/
+│       └── decimal-utils.ts          # Financial precision
+└── tests/
+    ├── unit/cart-store.test.ts       # Cart logic tests
+    └── e2e/                          # Playwright E2E tests
+```
+
+### Component Ownership Matrix
+
+| Feature | Backend Owner | Frontend Owner |
+|---------|---------------|----------------|
+| Order Creation | `OrderController`, `PaymentService` | `checkout/payment/page.tsx` |
+| Payment (Stripe) | `StripeService` | `stripe-payment-form.tsx` |
+| Payment (PayNow) | `PayNowService` | `paynow-qr-display.tsx` |
+| Inventory | `InventoryService` | `cart-store.ts` |
+| PDPA Consent | `PdpaService`, `PdpaConsentController` | `payment-method-selector.tsx` |
+| Invoice | `InvoiceService`, `InvoiceController` | (Admin panel) |
+| Product Catalog | `ProductController` | `menu/page.tsx` |
+| Locations | `LocationController` | `locations/page.tsx` |
+
+### PR Handling Decision Tree
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    What type of change?                     │
+└─────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        ▼                     ▼                     ▼
+    BUG FIX               NEW FEATURE           UI CHANGE
+        │                     │                     │
+        ▼                     ▼                     ▼
+   1. Find failing        1. Check               1. Compare to
+      test or write          MASTER_EXECUTION       static_landing_
+      one first              _PLAN.md               page_mockup.html
+        │                     │                     │
+        ▼                     ▼                     ▼
+   2. Fix the bug         2. Identify phase      2. Use retro-*
+                             and relevant           components ONLY
+        │                    sub-plan               │
+        ▼                     │                     ▼
+   3. Verify test         3. Follow validation   3. Run visual
+      passes                 checkpoints            regression
+        │                     │                     │
+        ▼                     ▼                     ▼
+   4. Run make test       4. Create tests        4. Verify WCAG AAA
+                             alongside code          (7:1 contrast)
+```
+
+### Operational Commands
+
 | Task | Command | Description |
-| :--- | :--- | :--- |
-| Start Dev | make up | Starts all Docker containers (Front, Back, DB, Redis). |
-| Stop Dev | make down | Stops and removes containers. |
-| View Logs | make logs | Tails logs for all services. |
-| Install Deps | make install | Runs npm install and composer install. |
-| Shell (Back)| make shell-backend | Bash access to Laravel container. |
-| Shell (Front)| make shell-frontend | Shell access to Next.js container. |
-| Migrate DB | make migrate | Runs Laravel migrations. |
-| Testing | make test | Runs both Frontend and Backend tests. |
----
-5. Critical Compliance & Implementation Mandates
-1. Singapore Compliance
-*   GST (9%): Display prices inclusive of GST. Store as DECIMAL(10,4) (not integer cents) to avoid rounding errors on tax calculation.
-*   PDPA: User consent must be logged with IP, User Agent, and Timestamp. Use the pdpa_consents table with pseudonymization (SHA256 hash).
-*   PayNow: Integration via Stripe Singapore. QR codes must be 256x256px minimum, 15-minute expiry, with manual fallback.
-*   InvoiceNow: Planned for Phase 6 - UBL 2.1 XML generation for PEPPOL.
-2. "Anti-Generic" Design
-*   No Standard Grids: Use retro-* components for all UI elements.
-*   Motion: Use cubic-bezier(0.34, 1.56, 0.64, 1) for that specific "bounce" feel.
-*   Typography: Strict adherence to Fraunces (Headings) and DM Sans (Body).
-*   Color Tokens: Must reference CSS variables from tokens.css (e.g., var(--color-sunrise-coral)).
-*   Accessibility: WCAG AAA compliance mandatory (7:1 contrast minimum).
-3. Backend Implementation Rules
-*   Decimal Precision: All financial calculations use DECIMAL(10,4) in PostgreSQL.
-*   Inventory: Two-phase reservation - Redis soft reserve (15-min TTL) → PostgreSQL commit on payment success.
-*   Payment Idempotency: PaymentService validates amount matches order total before processing.
-*   Webhook Security: Signature verification happens before any processing. Invalid signatures return HTTP 400 immediately.
-*   Soft Deletes: Payment records use SoftDeletes trait for 7-year regulatory retention.
-4. Workflow
-*   Validation: Do not write code without validating the plan against MASTER_EXECUTION_PLAN.md and VALIDATED_EXECUTION_PLAN.md.
-*   Files: When creating new files, ensure they are registered in the correct directory (e.g., frontend/src/components/ui vs frontend/src/components/animations).
-*   Git: Never commit secrets. Use .env files only.
-*   Testing: Write tests alongside implementation, not as an afterthought.
----
-6. Key Reference Documents
-Master Plans
-*   MASTER_EXECUTION_PLAN.md (79KB) - Original 6-phase technical architecture
-*   VALIDATED_EXECUTION_PLAN.md (38KB) - 119 validated tasks across 8 phases with refinements
-*   Phase Sub-Plans: PHASE_0_SUBPLAN.md through PHASE_5_SUBPLAN.md in /home/project/authentic-kopitiam/ directory
-Current Status
-*   PROJECT_STATUS_REPORT.md (15KB) - Latest completion report as of Jan 18, 2026
-*   status_current.md (20KB) - Real-time implementation progress
-*   final_status.md (5KB) - Phase 5 completion summary
-Testing & Troubleshooting
-*   PHASE_4_VALIDATION_REPORT.md (13KB) - OrderController test failures analysis
-*   PHASE_3_INTEGRATION_TESTS.md (14KB) - Backend testing strategy
-Design Reference
-*   static_landing_page_mockup.html (75KB) - Authoritative design reference (1970s kopitiam aesthetic)
-*   AGENTS.md (37KB) - AI agent operational constraints and persona definitions
-*   GEMINI.md (13KB) - Additional developer context
----
-7. Test Coverage Status
-Current Test Implementation (Phase 6 in Progress)
-Backend Tests (7 files located in /backend/tests/):
-*   Api/OrderControllerTest.php - 11/11 PASSING (62 assertions) - Full decimal compliance verified
-*   Api/ProductControllerTest.php - CRUD operations
-*   Api/LocationControllerTest.php - Location endpoints
-*   Api/PdpaConsentControllerTest.php - Consent tracking (Authentication issue pending)
-*   Unit/PaymentServiceTest.php - Payment logic (Legacy mock data pending update)
-*   TestCase.php - Base test case
-Frontend Tests - Infrastructure being built:
-*   E2E Tests: Playwright setup pending (referenced in README but not implemented)
-*   Unit Tests: Vitest configuration pending
-*   Visual Regression: Percy/Screenshot API pending
-*   Performance: Lighthouse CI pending
-Test Failure Categories & Mitigation
-Type 1: Infrastructure Setup Failures
-- Missing migrations: SQLSTATE[42P01] relation "table" does not exist
-- Permission issues: EACCES: permission denied
-- Container health: PostgreSQL not ready, Redis connection refused
-- Prevention: Always verify docker containers healthy with make logs
-Type 2: Logic/Implementation Failures
-- Business rule violations: expected vs actual behavior mismatch
-- Edge case handling: null values, boundary conditions
-- Remediation: Add unit tests for specific logic, then fix
-Type 3: Schema/Constraint Failures
-- Foreign key violations: SQLSTATE[23503] foreign key constraint
-- Unique constraint violations: SQLSTATE[23505] unique constraint
-- Remediation: Check database constraints vs application logic
-- Example: pdpa_consents composite unique index on (pseudonymized_id, consent_type)
-Type 4: Transaction/Race Condition Failures
-- Concurrent access: race conditions in Redis operations
-- Deadlocks: concurrent database writes
-- Remediation: Redis atomic operations, PostgreSQL advisory locks
-- Example: Inventory reservation uses lockForUpdate()
-Type 5: Integration/Authentication Failures
-- Middleware blocking: 401, 403 when expecting 200
-- Request validation: 422 with validation errors
-- Remediation: Provide required auth headers or ownership verification data
-- Example: Order status requires customer_email + invoice_number OR auth user
----
-8. Interaction Guidelines for AI Agents
-When working on this project:
-1.  Read MASTER_EXECUTION_PLAN.md and the relevant sub-plan (e.g., PHASE_5_SUBPLAN.md) before taking action.
-2.  Verify against static_landing_page_mockup.html for any visual implementation.
-3.  Strictly adhere to the Singapore compliance rules (especially regarding currency/GST).
-4.  Use the retro-* components instead of generic UI elements.
-5.  Always Validate your plan with the user before writing code.
-6.  Reference VALIDATED_EXECUTION_PLAN.md for implementation checkpoints.
----
-9. Critical Technical Decisions from Phase 5
-Decision 1: Provider-Specific Service Pattern
-*   Chosen: Separate StripeService and PayNowService from PaymentService orchestrator
-*   Rationale: Clean abstraction allows mocking in tests, independent provider upgrades, clear separation of concerns
-*   Impact: Easy to add new payment providers (e.g., GrabPay, PayPal) by creating new Service classes
-*   Files: backend/app/Services/PaymentService.php, StripeService.php, PayNowService.php
-Decision 2: Webhook-Driven Status Updates
-*   Chosen: Order status updates only via webhooks, not API polling
-*   Rationale: Accurate, real-time status reflects actual payment provider state; prevents race conditions
-*   Implementation: WebhookController → PaymentService → order.update('status' => 'processing')
-*   Files: backend/app/Http/Controllers/Api/WebhookController.php
-Decision 3: Soft Deletes for Payments
-*   Chosen: Added SoftDeletes trait to Payment model
-*   Rationale: Regulatory compliance requires retaining payment records for 7 years (Singapore regulations)
-*   Implementation: Uses deleted_at column, no actual data deletion
-*   Files: backend/app/Models/Payment.php, migration: add_deleted_at_to_payments
-Decision 4: Inventory Restoration on Refund
-*   Chosen: Optional inventory restoration via restore_inventory parameter
-*   Rationale: Some refunds shouldn't restore inventory (e.g., hygiene products, custom orders)
-*   Implementation: PaymentService checks flag, calls InventoryService method
-*   Files: backend/app/Services/PaymentService.php, InventoryService.php
-Decision 5: Decimal Precision Strategy
-*   Chosen: Use DECIMAL(10,4) for all financial fields in PostgreSQL
-*   Rationale: Singapore GST calculations require 4 decimal precision to avoid rounding errors on 9% tax
-*   Implementation: All migrations use $table->decimal('price', 10, 4)
-*   Files: All migration files, backend/app/Models/ casts
-Decision 6: Boundary Conversion Strategy
-*   Chosen: Isolate integer-to-cents conversion to Stripe API boundary only
-*   Rationale: Stripe API requires integer cents, but project mandate requires DECIMAL(10,4) throughout the application to prevent rounding errors.
-*   Implementation: `StripeService` converts decimal to cents internally before calling Stripe SDK. `PaymentService` and Models always use decimal.
-*   Files: `backend/app/Services/StripeService.php`, `backend/app/Services/PaymentService.php`
----
-10. Common Pitfalls & Prevention (from Phase 4.6 Lessons)
-PIT-001: Redis Double-Prefixing
-- Symptom: Keys stored as prefix:prefix:key instead of prefix:key
-- Detection: Check Redis keys in Laravel: Redis::keys('pattern') vs direct redis-cli
-- Fix: Extract Laravel prefix before Redis operations: str_replace(config('database.redis.options.prefix'), '', $fullKey)
-PIT-002: Transaction Abortion from Secondary Operations
-- Symptom: SQLSTATE25P02 "current transaction is aborted" when querying after error
-- Cause: Non-critical operations inside transaction boundaries cause cascading failures
-- Prevention: Move non-critical operations (consent recording, logging) outside transaction boundaries
-PIT-003: Missing Soft Delete Columns
-- Symptom: QueryException "column table.deleted_at does not exist"
-- Cause: Model has SoftDeletes trait but migration didn't add column
-- Prevention: Always verify migration and model consistency
-PIT-004: Unique Constraint on Wrong Columns
-- Symptom: SQLSTATE23505 when inserting valid multi-row data
-- Cause: Single-column unique index instead of composite unique index
-- Fix: Drop single-column unique, add composite: $table->unique(['col1', 'col2'])
+|------|---------|-------------|
+| Start Dev | `make up` | Start all Docker containers |
+| Stop Dev | `make down` | Stop and remove containers |
+| View Logs | `make logs` | Tail logs for all services |
+| Install Deps | `make install` | Run npm/composer install |
+| Backend Shell | `make shell-backend` | Bash into Laravel container |
+| Frontend Shell | `make shell-frontend` | Shell into Next.js container |
+| Migrate DB | `make migrate` | Run Laravel migrations |
+| Run All Tests | `make test` | Backend + Frontend tests |
+| Backend Tests | `make test-backend` | PHPUnit tests only |
+| Fresh DB | `make migrate-fresh` | Reset + seed database |
+
 ---
 
-📋 COMPREHENSIVE SESSION STATE SUMMARY
-Project Context: Morning Brew Collective - Singapore GST Compliance Mandate
-Core Mandate: All financial values must use DECIMAL(10,4) to ensure Singapore GST (9%) calculation precision.
-Critical Compliance Gap Identified by QA: Database schema used mixed types (INTEGER, DECIMAL(10,2)) violating mandate.
----
-✅ COMPLETED WORK - PHASE 1-5 REMEDIATION
-Phase 1: Schema Analysis & Migration (COMPLETE)
-What Was Done:
-- Created remediation migration: 2026_01_20_095125_fix_decimal_precision_for_singapore_gst_compliance.php
-- Applied migration successfully to all tables
-- Later: Removed redundant migration and updated base migrations directly
-Tables Remediated:
-- ✅ orders: subtotal, gst_amount, total_amount → DECIMAL(10,4)
-- ✅ order_items: unit_price → DECIMAL(10,4)
-- ✅ payments: amount, refunded_amount → DECIMAL(10,4)
-- ✅ payment_refunds: amount → DECIMAL(10,4)
-- ✅ products: price → DECIMAL(10,4) (was already compliant)
-Files Modified:
-- /home/project/authentic-kopitiam/backend/database/migrations/2026_01_17_000004_create_orders_table.php - Changed integer columns to decimal
-- /home/project/authentic-kopitiam/backend/database/migrations/2026_01_17_000005_create_order_items_table.php - Changed unit_price_cents → unit_price DECIMAL(10,4)
-- /home/project/authentic-kopitiam/backend/database/migrations/2026_01_17_000008_create_payments_table.php - Changed from (10,2) to (10,4)
-- /home/project/authentic-kopitiam/backend/database/migrations/2026_01_18_170348_create_payment_refunds_table.php - Changed from (10,2) to (10,4)
-Validation Result: migrate:fresh --seed succeeds with all 16 migrations
----
-Phase 2: Backend Models (COMPLETE)
-What Was Done:
-Updated Laravel models to remove integer casts and use decimal casts.
-Files Modified:
-1. /home/project/authentic-kopitiam/backend/app/Models/Order.php
-   - Removed: 'subtotal_cents' => 'integer', 'gst_cents' => 'integer', 'total_cents' => 'integer'
-   - Added: 'subtotal' => 'decimal:4', 'gst_amount' => 'decimal:4', 'total_amount' => 'decimal:4'
-   - Updated: calculateTotal() method to use decimal arithmetic
-   - Removed: Legacy accessor methods (getSubtotalAttribute(), getGstAttribute(), getTotalAttribute())
-2. /home/project/authentic-kopitiam/backend/app/Models/OrderItem.php
-   - Removed: 'unit_price_cents' => 'integer'
-   - Added: 'unit_price' => 'decimal:4'
-   - Updated: getSubtotalAttribute() to calculate from decimal values
-Validation Result: Order creation with 99.9999 preserves all 4 decimal places in database
----
-Phase 3: Service Layer & Stripe Integration (COMPLETE)
-What Was Done:
-- Isolated integer-to-cents conversion to Stripe boundary only
-- StripeService internal conversion preserves decimal throughout application
-- PaymentService passes DECIMAL(10,4) directly to StripeService
-Files Modified:
-1. /home/project/authentic-kopitiam/backend/app/Services/StripeService.php
-   - Added: private function convertToCents(float $amount): int helper
-   - Changed: createPaymentIntent(int $amount) → createPaymentIntent(float $amount)
-   - Changed: processRefund(int $amount) → processRefund(?float $amount)
-   - Both methods now convert to cents internally before calling Stripe API
-   - Return arrays include both amount (cents for Stripe) and amount_decimal (original decimal value)
-2. /home/project/authentic-kopitiam/backend/app/Services/PaymentService.php
-   - Removed: $amountInCents = (int) round($amount * 100) conversion logic
-   - Updated: Both payment creation and refund now pass decimal amounts directly to StripeService
-   - Fixed: $order->id reference to use $payment->order_id in refund method
-Validation Result: Stripe receives integer cents, application preserves decimal(10,4) precision, no rounding errors introduced
----
-Phase 4: Frontend TypeScript Types (PARTIALLY COMPLETE)
-What Was Done:
-Updated frontend interfaces to reflect decimal fields instead of integer cents.
-Files Modified:
-- /home/project/authentic-kopitiam/frontend/src/types/api.ts
-  - Order interface: Removed subtotal_cents, gst_cents, total_cents; Added subtotal, gst_amount, total_amount as number
-  - OrderItem interface: Removed unit_price_cents, subtotal_cents; Added unit_price, subtotal as number
-  - Payment interface: Updated comments to reflect DECIMAL(10,4)
-Remaining Work:
-- Update cart-store.ts calculations to use decimal math (4 decimal precision)
-- Update payment form components to handle decimal display
-- Fix pre-existing TypeScript errors in checkout pages (non-blocking for compliance)
----
-Phase 5: Documentation & Validation (COMPLETE)
-Files Created:
-- /home/project/authentic-kopitiam/Comprehensive_Validated_Project_Understanding.md (QA document)
-- Migration validation logs
-- Test verification scripts
-Validation Results:
-- ✅ Database: 8 columns confirmed as DECIMAL(10,4) via SQL query
-- ✅ Backend Models: Decimal casts working, precision preserved
-- ✅ StripeService: Syntax valid, boundary conversion isolated
-- ✅ PaymentService: Decimal passthrough validated
-- ✅ Migration: migrate:fresh --seed successful
----
-🔍 CURRENT STATUS
-Compliance Matrix:
-| Component | Status | Details |
-|-----------|--------|---------|
-| Database Schema | ✅ COMPLETE | All 8 financial columns DECIMAL(10,4) |
-| Backend Models | ✅ COMPLETE | Laravel casts updated, integer logic removed |
-| PaymentService | ✅ COMPLETE | Decimal passthrough to StripeService |
-| StripeService | ✅ COMPLETE | Boundary conversion isolated |
-| Base Migrations | ✅ COMPLETE | All base migrations updated |
-| Frontend Types | ⚠️ PARTIAL | Interfaces updated, calculations pending |
-| Frontend UI | ❌ NEEDS WORK | Syntax errors in payment pages (pre-existing) |
-Critical Validation:
--- VERIFIED: DECIMAL(10,4) precision preserved
-INSERT: subtotal=99.9999, gst=8.9999, total=108.9998
-DATABASE: subtotal=99.9999, gst=8.9999, total=108.9998
-RESULT: ✅ DECIMAL PRECISION PRESERVED
----
-📋 WHAT NEEDS TO BE DONE NEXT
-Priority 1: Frontend Decimal Calculations (REQUIRED for compliance)
-File: /home/project/authentic-kopitiam/frontend/src/store/cart-store.ts
-Update calculation methods:
-// Current (integer pattern):
-const gstAmount = Math.round(subtotal * 0.09 * 100) / 100;
-// Required (DECIMAL(10,4)):
-const gstAmount = Math.round(subtotal * 0.09 * 10000) / 10000;
-Priority 2: Frontend Test Suite (RECOMMENDED)
-Create validation tests for:
-- Cart calculations preserve 4 decimals
-- API responses handle decimal(10,4) values
-- Payment processing displays correct precision
-Priority 3: Pre-existing Frontend Bugs (OPTIONAL for compliance)
-Fix TypeScript errors in:
-- src/app/checkout/confirmation/page.tsx
-- src/app/checkout/payment/page.tsx
-- Payment component import issues
-These are not related to DECIMAL compliance but affect build process.
----
-🔑 KEY TECHNICAL DECISIONS MADE
-1. Conversion Boundary Isolation
-   - Why: Stripe API requires integer cents, but project mandate requires DECIMAL(10,4) throughout
-   - Decision: Convert to cents ONLY within StripeService methods, return original decimal in response
-   - Benefit: Application logic preserves precision, Stripe gets required format
-2. Base Migration Update (vs. Separate Fix)
-   - Why: Original migration files defined incorrect schema
-   - Decision: Updated base migrations directly and removed redundant fix migration
-   - Benefit: migrate:fresh --seed works cleanly without additional remediation steps
-3. Decimal Cast Strategy
-   - Why: Laravel automatically handles decimal casting, but explicit casts ensure consistency
-   - Decision: Use 'decimal:4' in model casts for all financial fields
-   - Benefit: Predictable behavior, clear intent, prevents accidental integer conversion
-4. Frontend Type Updates
-   - Why: Frontend must match backend schema for type safety and correct display
-   - Decision: Updated all TypeScript interfaces to use number for decimal fields
-   - Benefit: TypeScript will catch mismatches between frontend calculations and backend data
----
-🧪 VALIDATION COMMANDS READY
-# Database schema verification
+## 📋 REFERENCE: Quick Lookup
+
+### Verification Commands Cheatsheet
+
+```bash
+# Database schema verification (DECIMAL(10,4))
 docker compose exec postgres psql -U brew_user -d morning_brew -c "
-SELECT table_name, column_name, data_type, numeric_precision, numeric_scale
+SELECT table_name, column_name, numeric_precision, numeric_scale
 FROM information_schema.columns
-WHERE table_schema = 'public' 
-AND column_name IN ('subtotal', 'gst_amount', 'total_amount', 'unit_price', 'price', 'amount', 'refunded_amount')
-ORDER BY table_name, column_name;"
-# Backend decimal precision test
-docker compose exec backend php artisan tinker --execute '
-$order = new Order();
-$order->subtotal = 99.9999;
-$order->gst_amount = 8.9999;
-$order->total_amount = 108.9998;
-$order->save();
-$fresh = Order::find($order->id);
-echo "Precision: " . (strpos((string)$fresh->subtotal, ".") !== false ? strlen(substr((string)$fresh->subtotal, strpos((string)$fresh->subtotal, ".") + 1)) : 0) . " decimals\n";
-$order->delete();
-'
-# Run full test suite
+WHERE numeric_scale = 4;"
+
+# Backend service line counts
+wc -l backend/app/Services/*.php
+
+# Frontend payment components
+wc -l frontend/src/components/payment/*.tsx
+
+# Run backend tests
 docker compose exec backend php artisan test
-# Frontend typecheck
-cd /home/project/authentic-kopitiam/frontend && npm run typecheck
+
+# Frontend TypeScript check
+cd frontend && npm run typecheck
+
+# Frontend build
+cd frontend && npm run build
+```
+
+### Test Coverage Status
+
+| Test File | Type | Status |
+|-----------|------|--------|
+| `Api/OrderControllerTest.php` | Integration | ✅ Passing |
+| `Api/ProductControllerTest.php` | Integration | ✅ Passing |
+| `Api/LocationControllerTest.php` | Integration | ✅ Passing |
+| `Api/PdpaConsentControllerTest.php` | Integration | ⚠️ Auth issue |
+| `Unit/PaymentServiceTest.php` | Unit | ⚠️ Mock update needed |
+| `tests/unit/cart-store.test.ts` | Unit (Frontend) | ✅ 4 tests |
+| `tests/e2e/admin-flows.spec.ts` | E2E | ✅ Active |
+| `tests/e2e/payment-flows.spec.ts` | E2E | ✅ Active |
+
+### Common Pitfalls
+
+| ID | Symptom | Cause | Fix |
+|----|---------|-------|-----|
+| PIT-001 | `prefix:prefix:key` in Redis | Double-prefixing | Extract Laravel prefix before ops |
+| PIT-002 | `SQLSTATE[25P02]` | Non-critical ops in transaction | Move logging outside transaction |
+| PIT-003 | `column.deleted_at does not exist` | Missing soft delete column | Verify migration adds column |
+| PIT-004 | `SQLSTATE[23505]` on valid data | Wrong unique constraint | Use composite unique index |
+
+### Key Reference Documents
+
+| Document | Size | Purpose |
+|----------|------|---------|
+| `MASTER_EXECUTION_PLAN.md` | 79KB | Original 6-phase architecture |
+| `VALIDATED_EXECUTION_PLAN.md` | 38KB | 119 validated tasks |
+| `static_landing_page_mockup.html` | 75KB | Authoritative design reference |
+| `Project_Architecture_Document.md` | 7KB | Architecture overview |
+
 ---
-⚠️ IMPORTANT NOTES FOR NEW SESSION
-1. Database State: Schema is fully compliant. Running migrate:fresh --seed works correctly
-2. Backend State: All models, services, and controllers updated to use decimal logic
-3. Frontend State: Type interfaces updated, but calculation logic still needs decimal precision implementation
-4. Test Data: Locations table may be empty after fresh migration. Create one for testing if needed
-5. Stripe API: Service is boundary-controlled; decimal-to-cents conversion happens only at API call
-6. Evidence Chain: All modifications systematically validated with SQL queries and PHP tests
-Resume Point: Frontend cart store calculations need decimal(10,4) precision implementation to complete full compliance loop.
 
+## 🎓 Agent Interaction Guidelines
 
+1. **Before coding:** Read this file + `MASTER_EXECUTION_PLAN.md`
+2. **For UI work:** Verify against `static_landing_page_mockup.html`
+3. **For payments:** Strictly follow DECIMAL(10,4) mandate
+4. **For components:** Use `retro-*` wrappers, never raw Shadcn/Radix
+5. **Always validate:** Present plan to user before writing code
+6. **After changes:** Run `make test` and `npm run build`
+
+---
+
+*Document validated against codebase: January 23, 2026*  
+*Next scheduled validation: After next major phase completion*
