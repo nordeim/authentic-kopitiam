@@ -324,3 +324,15 @@ We are here: PaymentServiceTest remediation is 90% complete:
 - ⚠️ Tests TIMEOUT (execution hangs - need to diagnose why)
 - ⏳ Not yet validated that all 11 tests PASS
 Next immediate action: Determine why tests hang during execution and fix timeout issue. Use --stop-on-defect and single-test filters to isolate the problem.
+
+---
+
+✦ I have meticulously researched, planned, and documented the strategy for Phase 8: Operations (Admin Dashboard) and InvoiceNow Integration.
+
+  Plan Summary:
+   1. Architecture: A "Headless" Admin UI built within the existing Next.js application (/admin route group) to leverage the design system, but styled with a distinct "Retro Manager's Office/Ledger" aesthetic.
+   2. InvoiceNow: A dedicated Laravel Service (InvoiceService) to generate UBL 2.1 XML natively, ensuring strict compliance with Singapore's Peppol BIS Billing 3.0 standards (especially regarding GST and decimal precision).
+   3. Checklist: A comprehensive 4-part checklist (8A-8D) is saved in PHASE_8_IMPLEMENTATION_PLAN.md.
+
+  You may now proceed to execute Phase 8A: Admin Foundation.
+

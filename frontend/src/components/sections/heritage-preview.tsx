@@ -9,19 +9,19 @@ export function HeritagePreview() {
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-12">
           <h2 className="font-display text-4xl md:text-5xl font-bold mb-3 text-espresso-dark">Our Kopitiam Heritage</h2>
-          <p className="text-lg text-mocha-medium">Preserving Singapore's coffee culture since 1973</p>
+          <p className="text-lg text-mocha-medium">Preserving Singapore&apos;s coffee culture since 1973</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="text-espresso-dark">
             <p className="text-xl leading-relaxed mb-6">
               <span className="float-left font-display text-6xl font-extrabold text-terracotta-warm mr-4 leading-none">I</span>
-              n 1973, Uncle Lim opened his first kopitiam stall at Tiong Bahru Market. With nothing but a trusty coffee sock, a worn marble table, and recipes passed down through generations, he began serving what would become Singapore's most beloved morning ritual.
+              n 1973, Uncle Lim opened his first kopitiam stall at Tiong Bahru Market. With nothing but a trusty coffee sock, a worn marble table, and recipes passed down through generations, he began serving what would become Singapore&apos;s most beloved morning ritual.
             </p>
 
             <div className="bg-white/30 rounded-2xl p-8 my-8 relative border-3 border-dashed border-terracotta-warm">
               <blockquote className="font-display text-xl italic leading-relaxed mb-4 relative z-10">
-                "The kopitiam is more than just a place to drink coffee. It's where lawyers and laborers sit side by side, where deals are made and friendships are forged over steaming cups of kopi."
+                &quot;The kopitiam is more than just a place to drink coffee. It&apos;s where lawyers and laborers sit side by side, where deals are made and friendships are forged over steaming cups of kopi.&quot;
               </blockquote>
               <footer className="font-bold text-terracotta-warm text-right">— Uncle Lim, Founder</footer>
             </div>

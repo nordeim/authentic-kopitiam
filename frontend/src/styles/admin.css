@@ -1,0 +1,36 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@layer components {
+  .ledger-table {
+    @apply w-full border-collapse text-left text-sm;
+  }
+
+  .ledger-table thead {
+    @apply border-b-4 border-double border-espresso-dark;
+  }
+
+  .ledger-table th {
+    @apply py-3 px-4 font-mono font-bold text-espresso-dark uppercase tracking-wider bg-black/5;
+  }
+
+  .ledger-table tbody tr {
+    @apply border-b border-mocha-medium/20 hover:bg-black/5 transition-colors;
+  }
+
+  .ledger-table td {
+    @apply py-3 px-4 text-espresso-dark font-medium;
+  }
+
+  .ledger-table td.numeric {
+    @apply font-mono text-right;
+  }
+
+  .ledger-card {
+    @apply bg-cream-white border-2 border-espresso-dark shadow-[4px_4px_0px_0px_rgba(61,43,31,0.2)] rounded-sm;
+  }
+
+  .ledger-input {
+    @apply bg-transparent border-b-2 border-mocha-medium/50 px-2 py-1 font-mono text-espresso-dark focus:outline-none focus:border-sunrise-amber transition-colors placeholder:text-mocha-medium/50;
+  }
+}

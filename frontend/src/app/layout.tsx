@@ -1,12 +1,10 @@
 import type { Metadata } from 'next';
 import { Fraunces, DM_Sans } from '@/lib/fonts';
 import '../styles/globals.css';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
 
 export const metadata: Metadata = {
-  title: 'Morning Brew Collective - Where Singapore\'s Morning Ritual Begins',
-  description: 'Singapore\'s authentic kopitiam experience since 1973. Traditional coffee, breakfast, and pastries with a modern touch.',
+  title: 'Morning Brew Collective',
+  description: 'Singapore\'s authentic kopitiam experience since 1973.',
   viewport: 'width=device-width, initial-scale=1.0',
   themeColor: '#3D2B1F',
 };
@@ -24,14 +22,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
       </head>
       <body className={Fraunces.variable}>
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        <Header />
-        <main id="main-content">
-          {children}
-        </main>
-        <Footer />
+        {children}
       </body>
     </html>
   );
