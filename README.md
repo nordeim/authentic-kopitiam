@@ -2,14 +2,14 @@
 
 **🇻🇳 Singapore's authentic kopitiam experience since 1973 — Now available online with modern payment integration**
 
-[![Payment Integration Status](https://img.shields.io/badge/Phase%205.5-Completed-brightgreen)](https://github.com/your-repo/morning-brew-collective)
+[![Phase 8 Complete](https://img.shields.io/badge/Phase%208-Completed-brightgreen)](https://github.com/your-repo/morning-brew-collective)
 [![Laravel Version](https://img.shields.io/badge/Laravel-12.x-red)](https://laravel.com/docs/12.x)
 [![Next.js Version](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4.0-blue)](https://tailwindcss.com)
 [![WCAG AAA](https://img.shields.io/badge/WCAG-AAA-blue)](https://www.w3.org/WAI/WCAG2AAA-Conformance)
 [![License](https://img.shields.io/badge/License-Commercial-orange)](#license)
 
-> **LATEST UPDATE**: Phase 5.5 (Frontend Polish & Compliance) is complete. The application now runs on **Tailwind CSS v4.0** with a fully restored "Sunrise at the Kopitiam" aesthetic, zero build errors, and end-to-end `DECIMAL(10,4)` financial precision for Singapore GST compliance.
+> **LATEST UPDATE**: **Phase 8 (Operations & InvoiceNow)** is complete. The platform now features a comprehensive **Admin Dashboard** with a distinct "Manager's Office" aesthetic and a fully compliant **InvoiceNow (PEPPOL BIS Billing 3.0)** generation service.
 
 ---
 
@@ -21,14 +21,21 @@ Morning Brew Collective is a **Singapore-first headless e-commerce platform** th
 
 ---
 
-## ✅ Current Project Status (January 21, 2026)
+## ✅ Current Project Status (January 22, 2026)
+
+### Operations & Admin (Phase 8) ✅ 100% COMPLETE
+
+**✅ COMPLETED**:
+- **Admin Dashboard**: A retro-utilitarian "Manager's Office" interface (`/admin`) separate from the customer shop.
+- **Route Architecture**: Refactored Next.js app into `(shop)` and `(dashboard)` route groups to support distinct layouts and metadata.
+- **Order Management**: Full CRUD capabilities for orders with status workflow (Pending -> Preparing -> Completed).
+- **InvoiceNow Integration**: Built-in PHP service generates valid **PEPPOL BIS Billing 3.0 (UBL 2.1)** XML files for B2B compliance.
+- **Ledger Design**: Admin UI features monospace fonts, double-borders, and high-contrast tables inspired by physical accounting ledgers.
 
 ### Frontend Architecture (Phase 2 & 5.5) ✅ 100% COMPLETE
 
 **✅ COMPLETED**:
 - **Design System**: Fully migrated to **Tailwind CSS v4.0** (CSS-first configuration).
-- **Aesthetic Restoration**: Fixed "flat/minimal" regressions; restored sunburst animations, gradients, and retro styling.
-- **Build Stability**: Resolved all Next.js hydration errors, unused variable warnings, and Type discrepancies.
 - **Payment UI**: 8 production-ready components (PayNow QR, Stripe Elements, Status Tracker).
 - **Compliance**: Frontend types and calculations now strictly use `number` (decimal) to align with backend `DECIMAL(10,4)` precision.
 
@@ -38,16 +45,6 @@ Morning Brew Collective is a **Singapore-first headless e-commerce platform** th
 - **Financial Precision**: All monetary values stored as `DECIMAL(10,4)` to prevent rounding errors (Singapore GST 9%).
 - **Payment API**: Robust Stripe & PayNow integration with webhook-driven status updates.
 - **Inventory System**: Two-phase reservation (Redis lock → PostgreSQL commit) prevents overselling.
-- **Security**: Zero-trust `VerifyOrderOwnership` middleware implemented.
-- **Service Layer**: Provider-specific services (Stripe/PayNow) isolated from orchestration logic.
-
-### Payment Integration (Phase 5) ✅ **100% COMPLETE**
-
-**🎉 BREAKTHROUGH**: Full-stack payment flow is operational and compliant.
-
-- **Authoritative Data**: Frontend confirmation pages display GST and subtotal values *directly from the backend*, ensuring 100% accuracy.
-- **Resilience**: Hydration mismatches in SVG animations (SteamRise) fixed via architectural refactoring.
-- **Testing**: Comprehensive backend test suite (11/11 passing) validating financial logic.
 
 ---
 
@@ -82,7 +79,8 @@ make install
 make up
 
 # Services will be available at:
-# Frontend: http://localhost:3000
+# Shop: http://localhost:3000
+# Admin Dashboard: http://localhost:3000/admin
 # Backend API: http://localhost:8000  
 # Mailpit: http://localhost:8025
 # Database: localhost:5432
@@ -91,7 +89,7 @@ make up
 ### Testing
 
 ```bash
-# Run backend payment tests (PHPUnit)
+# Run backend payment & invoice tests (PHPUnit)
 make test-backend
 
 # Run frontend component tests (Vitest)
@@ -117,19 +115,19 @@ If the UI looks "flat" or minimal, verify that `frontend/src/styles/globals.css`
 
 ---
 
-## 💳 Payment Architecture
+## 💳 Payment & Invoice Architecture
 
 ### Data Flow
 1.  **Initiation**: Frontend requests payment intent/QR code from Backend.
 2.  **Processing**: Backend orchestrates provider (Stripe/PayNow) via `PaymentService`.
 3.  **Completion**: Webhook updates payment status in Backend.
 4.  **Confirmation**: Backend calculates final tax/totals (DECIMAL 10,4).
-5.  **Display**: Frontend fetches authoritative order details to display receipt.
+5.  **Invoicing**: Admin triggers `InvoiceService` to generate UBL 2.1 XML for PEPPOL network.
 
 ### Key Decisions
 *   **No Client-Side Math**: Tax and totals are never calculated solely on the client for final receipts. We trust the backend.
 *   **Webhooks Only**: Order status transitions happen *only* via webhooks, ensuring security even if the user closes the browser.
-*   **Soft Deletes**: Payment records are soft-deleted for audit trails (7-year retention).
+*   **InvoiceNow Compliance**: Strict adherence to SG Peppol BIS Billing 3.0 standards, including specific tax category codes ('S') and currency codes ('SGD').
 
 ---
 
