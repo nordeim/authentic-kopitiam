@@ -9,43 +9,28 @@ use App\Http\Controllers\Api\PdpaConsentController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\AuthController;
 
 // API Version Group
 Route::prefix('v1')->group(function () {
 
-  // Products Resource - Explicit routes (apiResource only() not working reliably)
+  // ══════════════════════════════════════════════════════════════════
+  // AUTHENTICATION ROUTES (Public)
+  // ══════════════════════════════════════════════════════════════════
+  Route::post('register', [AuthController::class, 'register']);
+  Route::post('login', [AuthController::class, 'login']);
+
+  // ══════════════════════════════════════════════════════════════════
+  // PUBLIC ROUTES (No auth required)
+  // ══════════════════════════════════════════════════════════════════
+
+  // Products - Read only
   Route::get('products', [ProductController::class, 'index']);
   Route::get('products/{product}', [ProductController::class, 'show']);
-  Route::post('products', [ProductController::class, 'store'])->middleware(['auth:sanctum']);
-  Route::put('products/{product}', [ProductController::class, 'update'])->middleware(['auth:sanctum']);
-  Route::delete('products/{product}', [ProductController::class, 'destroy'])->middleware(['auth:sanctum']);
 
-  // Orders Resource
-  Route::apiResource('orders', OrderController::class)
-    ->only(['index', 'show', 'store', 'destroy']);
-
-  Route::put('orders/{id}/status', [OrderController::class, 'updateStatus'])
-    ->middleware(['order.ownership']);
-
-  // Invoice Routes
-  Route::get('orders/{id}/invoice/xml', [InvoiceController::class, 'downloadXml']);
-
-  // Locations Resource - Explicit GET routes (apiResource only() not working reliably)
+  // Locations - Read only
   Route::get('locations', [LocationController::class, 'index']);
   Route::get('locations/{location}', [LocationController::class, 'show']);
-  Route::post('locations', [LocationController::class, 'store'])->middleware(['auth:sanctum']);
-  Route::put('locations/{location}', [LocationController::class, 'update'])->middleware(['auth:sanctum']);
-  Route::delete('locations/{location}', [LocationController::class, 'destroy'])->middleware(['auth:sanctum']);
-
-  // PDPA Consent Routes
-  Route::post('consents', [PdpaConsentController::class, 'store'])
-    ->middleware(['auth:sanctum']);
-
-  Route::post('consents/{id}/withdraw', [PdpaConsentController::class, 'withdraw'])
-    ->middleware(['auth:sanctum']);
-
-  Route::get('consents/export/{id}', [PdpaConsentController::class, 'export'])
-    ->middleware(['auth:sanctum']);
 
   // Health Check
   Route::get('health', function () {
@@ -56,19 +41,68 @@ Route::prefix('v1')->group(function () {
     ]);
   });
 
+  // Webhooks (validated by signature, not auth)
+  Route::post('webhooks/stripe', [WebhookController::class, 'stripe']);
+  Route::post('webhooks/paynow', [WebhookController::class, 'paynow']);
 
-    // Payments Resource
+  // ══════════════════════════════════════════════════════════════════
+  // AUTHENTICATED ROUTES (Customer + Admin)
+  // ══════════════════════════════════════════════════════════════════
+  Route::middleware('auth:sanctum')->group(function () {
+
+    // Auth management
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::get('me', [AuthController::class, 'me']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
+
+    // Orders - Full access for authenticated users
+    Route::apiResource('orders', OrderController::class)
+      ->only(['index', 'show', 'store', 'destroy']);
+
+    Route::put('orders/{id}/status', [OrderController::class, 'updateStatus'])
+      ->middleware(['order.ownership']);
+
+    // Invoice Routes
+    Route::get('orders/{id}/invoice/xml', [InvoiceController::class, 'downloadXml']);
+
+    // Payments - Authenticated only
     Route::post('payments/{order}/paynow', [PaymentController::class, 'createPayNowPayment']);
     Route::post('payments/{order}/stripe', [PaymentController::class, 'createStripePayment']);
     Route::get('payments/{payment}', [PaymentController::class, 'show']);
     Route::post('payments/{payment}/refund', [PaymentController::class, 'refund']);
 
-    // Webhooks
-    Route::post('webhooks/stripe', [WebhookController::class, 'stripe']);
-    Route::post('webhooks/paynow', [WebhookController::class, 'paynow']);
+    // PDPA Consent Routes
+    Route::post('consents', [PdpaConsentController::class, 'store']);
+    Route::post('consents/{id}/withdraw', [PdpaConsentController::class, 'withdraw']);
+    Route::get('consents/export/{id}', [PdpaConsentController::class, 'export']);
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ADMIN ROUTES (Admin role only)
+  // ══════════════════════════════════════════════════════════════════
+  Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+
+    // Admin can manage products
+    Route::post('products', [ProductController::class, 'store']);
+    Route::put('products/{product}', [ProductController::class, 'update']);
+    Route::delete('products/{product}', [ProductController::class, 'destroy']);
+
+    // Admin can manage locations
+    Route::post('locations', [LocationController::class, 'store']);
+    Route::put('locations/{location}', [LocationController::class, 'update']);
+    Route::delete('locations/{location}', [LocationController::class, 'destroy']);
+
+    // Admin can view all orders (without ownership check)
+    Route::get('orders', [OrderController::class, 'index']);
+    Route::get('orders/{order}', [OrderController::class, 'show']);
+    Route::put('orders/{order}/status', [OrderController::class, 'updateStatus']);
+  });
+
 })->middleware(['throttle:api', 'cors']);
 
-// Legacy routes (for backward compatibility)
+// ══════════════════════════════════════════════════════════════════
+// LEGACY ROUTES (for backward compatibility)
+// ══════════════════════════════════════════════════════════════════
 Route::get('/user', function (Request $request) {
   return $request->user();
 })->middleware('auth:sanctum');
@@ -80,3 +114,4 @@ Route::get('/ping', function () {
     'env' => app()->environment(),
   ]);
 });
+
