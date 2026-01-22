@@ -1,8 +1,8 @@
 'use client';
 
+import { use } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, FileText, Printer, Mail, MapPin } from 'lucide-react';
-import { RetroButton } from '@/components/ui/retro-button';
 import { Order, OrderStatus } from '@/types/api';
 import { cn } from '@/lib/utils';
 
@@ -118,8 +118,11 @@ const statusColors: Record<OrderStatus, string> = {
   cancelled: 'bg-mocha-medium/20 text-mocha-medium border-mocha-medium/30',
 };
 
-export default function OrderDetailsPage({ params }: { params: { id: string } }) {
-  // In a real app, fetch data using params.id
+export default function OrderDetailsPage({ params }: { params: Promise<{ orderId: string }> }) {
+  // Unwrap params using React.use()
+  const { orderId } = use(params);
+  
+  // In a real app, fetch data using orderId
   const order = MOCK_ORDER_DETAIL;
 
   return (

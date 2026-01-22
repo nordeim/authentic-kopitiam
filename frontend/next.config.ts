@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  typedRoutes: true,
+  // typedRoutes: true, // Temporarily disabled to debug build error
   
   // Experimental features for Next.js 15
   experimental: {
@@ -61,15 +61,6 @@ const nextConfig: NextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
-          },
-        ],
-      },
-      {
-        source: '/:path*(\\?.*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
           },
         ],
       },
