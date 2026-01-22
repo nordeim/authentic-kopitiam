@@ -1,0 +1,215 @@
+# Implementation Plan: Mobile Navigation Fix
+
+## Problem Statement
+The mobile navigation menu (hamburger icon) is visible but clicking it does not display the menu items.
+
+---
+
+## Root Cause Analysis (UPDATED)
+
+### Classification: Class F - Event Propagation / State Race Condition
+
+**The Real Problem:**
+
+In [header.tsx](file:///home/project/authentic-kopitiam/frontend/src/components/layout/header.tsx) lines 55-62, a global click handler is attached:
+```javascript
+document.addEventListener('click', handleClickOutside);
+```
+
+And in lines 41-48, handleClickOutside does:
+```javascript
+const handleClickOutside = (e: MouseEvent) => {
+  const target = e.target as HTMLElement;
+  const mobileMenu = document.getElementById('mobile-menu');
+  if (mobileMenu && !mobileMenu.contains(target)) {
+    setIsMobileMenuOpen(false);  // ← CLOSES IMMEDIATELY
+  }
+};
+```
+
+**What happens on button click:**
+1. User clicks hamburger button (`.menu-toggle`)
+2. React `onClick={() => setIsMobileMenuOpen(true)}` fires → state set to `true`
+3. Click event bubbles up to document
+4. [handleClickOutside](file:///home/project/authentic-kopitiam/frontend/src/components/layout/header.tsx#41-54) fires
+5. Button is NOT inside `#mobile-menu`
+6. `setIsMobileMenuOpen(false)` fires → state set to `false`
+7. Menu never opens because state is immediately reset
+
+**Solution:** 
+- Exclude the menu toggle button from the click-outside check
+- Check if menu is actually open before trying to close it
+
+---
+
+## Proposed Fix
+
+### [MODIFY] [header.tsx](file:///home/project/authentic-kopitiam/frontend/src/components/layout/header.tsx)
+
+**Replace handleClickOutside function:**
+
+```diff
+  const handleClickOutside = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const mobileMenu = document.getElementById('mobile-menu');
++   const menuToggle = document.querySelector('.menu-toggle');
+    const cartOverlay = document.getElementById('cart-overlay');
+
+-   if (mobileMenu && !mobileMenu.contains(target)) {
++   // Only close if menu is open AND click is outside both menu AND toggle button
++   if (mobileMenu && !mobileMenu.contains(target) && !menuToggle?.contains(target)) {
+      setIsMobileMenuOpen(false);
+    }
+
+    if (cartOverlay && !cartOverlay.contains(target)) {
+      setIsCartOpen(false);
+    }
+  };
+```
+
+---
+
+## Verification Plan
+
+After fix:
+1. Start dev server: `npm run dev`
+2. Open mobile view (390×844)
+3. Click hamburger → menu should slide in
+4. Click outside menu → menu should close
+5. Click hamburger again → menu opens (not blocked)
+
+
+---
+
+## Verification Required
+
+Before implementing a fix, we need to confirm:
+
+1. **Is this issue on the live dev server or only in the static HTML file?**
+   - If dev server: Investigate hydration/client component issues
+   - If static HTML only: Expected behavior (static HTML has no interactivity)
+
+2. **Test on dev server:**
+   ```bash
+   cd frontend && npm run dev
+   # Open http://localhost:3000 in mobile device emulation
+   # Click hamburger menu
+   ```
+
+---
+
+## Proposed Fix
+
+### If issue persists on dev server:
+
+The [MobileMenu](file:///home/project/authentic-kopitiam/frontend/src/components/ui/mobile-menu.tsx#22-53) component is already marked `'use client'`, so it should hydrate properly. However, the inline `<style jsx>` in [mobile-menu.tsx](file:///home/project/authentic-kopitiam/frontend/src/components/ui/mobile-menu.tsx) may be causing issues.
+
+#### [MODIFY] [mobile-menu.tsx](file:///home/project/authentic-kopitiam/frontend/src/components/ui/mobile-menu.tsx)
+
+**Change 1:** Move inline styles to CSS file for better reliability
+
+```diff
+- <style jsx>{`
+-   .mobile-menu__close { ... }
+-   .mobile-menu__link { ... }
+- `}</style>
++ // Remove <style jsx> block and move to globals.css
+```
+
+#### [MODIFY] [globals.css](file:///home/project/authentic-kopitiam/frontend/src/styles/globals.css)
+
+**Add mobile menu component styles:**
+
+```css
+/* Mobile menu styles */
+.mobile-menu__close {
+  position: absolute;
+  top: var(--spacing-6);
+  right: var(--spacing-6);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--color-cream-white);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-menu__link {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-cream-white);
+  transition: color var(--duration-normal) var(--ease-smooth);
+  text-decoration: none;
+}
+
+.mobile-menu__link:hover {
+  color: var(--color-sunrise-amber);
+}
+```
+
+---
+
+## Verification Plan
+
+### Manual Testing
+1. Start dev server: `cd frontend && npm run dev`
+2. Open http://localhost:3000 in browser
+3. Open DevTools → toggle device toolbar (mobile view, 390×844)
+4. Click hamburger menu icon
+5. **Expected:** Menu slides in from right
+6. Click a menu link
+7. **Expected:** Menu closes
+8. Press Escape key
+9. **Expected:** Menu closes
+
+### Keyboard Testing
+- [ ] Tab reaches menu button
+- [ ] Enter/Space opens menu
+- [ ] Escape closes menu
+- [ ] Focus returns to button after close
+
+---
+
+## Alternative: Static HTML Enhancement
+
+If the requirement is for [mobile_landing_page.html](file:///home/project/authentic-kopitiam/mobile_landing_page.html) to work standalone (without Next.js), we need to add vanilla JavaScript:
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.querySelector('.menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    const closeBtn = menu.querySelector('.mobile-menu__close');
+    const links = menu.querySelectorAll('.mobile-menu__link');
+    
+    const setOpen = (open) => {
+      menu.style.transform = open ? 'translateX(0)' : 'translateX(100%)';
+      toggle.setAttribute('aria-expanded', open);
+    };
+    
+    toggle?.addEventListener('click', () => setOpen(true));
+    closeBtn?.addEventListener('click', () => setOpen(false));
+    links.forEach(a => a.addEventListener('click', () => setOpen(false)));
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    });
+  });
+</script>
+```
+
+---
+
+## Next Steps
+
+1. [ ] Verify issue on live dev server (not static HTML)
+2. [ ] If verified, apply CSS changes to globals.css
+3. [ ] Remove `<style jsx>` from mobile-menu.tsx
+4. [ ] Run verification protocol

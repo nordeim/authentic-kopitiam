@@ -1,0 +1,122 @@
+# Implementation Plan: Enhance Mobile Navigation Handbook
+
+## Objective
+Update [docs/MOBILE_NAVIGATION_SKILLS_HANDBOOK_TAILWIND_REACT_SHADCN.md](file:///home/project/authentic-kopitiam/docs/MOBILE_NAVIGATION_SKILLS_HANDBOOK_TAILWIND_REACT_SHADCN.md) with lessons learned from fixing the Morning Brew Collective mobile navigation bug.
+
+---
+
+## What We Learned
+
+**Bug Summary:**
+- Mobile menu button click was not opening the menu
+- Root cause: [handleClickOutside](file:///home/project/authentic-kopitiam/frontend/src/components/layout/header.tsx#41-58) document listener immediately closed the menu after it opened
+- The toggle button was not excluded from the "click outside" detection
+
+**Key Insight:**
+This is a distinct failure class not covered in the current taxonomy (A-G). The menu state briefly becomes true, but a race condition resets it before the next render.
+
+---
+
+## Proposed Changes
+
+### 1. Add Class H to Root-Cause Taxonomy (Section 3)
+
+**New failure class:**
+```markdown
+### Class H — Click-outside handler race condition
+**Signature:**
+- Menu briefly opens then immediately closes
+- Click on trigger sets state true, but document listener sets it false
+- `aria-expanded` may flicker or stay false
+
+**Root Cause:**
+Document-level click handlers fire after component handlers due to event bubbling. If the click-outside logic doesn't exclude the trigger element, it immediately undoes the toggle.
+
+**Fix:**
+- Exclude trigger element from click-outside detection
+- Use a ref or query selector to identify the trigger
+- Check if click target is inside both menu AND trigger
+```
+
+### 2. Add Anti-Pattern 6 (Section 6)
+
+**New anti-pattern:**
+```markdown
+### Anti‑Pattern 6 — Click-outside closes toggle button clicks
+\`\`\`tsx
+// Document click handler
+document.addEventListener('click', (e) => {
+  if (!menu.contains(e.target)) {
+    setIsOpen(false); // Closes even when toggle was clicked!
+  }
+});
+\`\`\`
+Result: menu never opens because toggle is outside menu.
+
+**Fix:**
+\`\`\`tsx
+if (!menu.contains(target) && !toggleButton.contains(target)) {
+  setIsOpen(false);
+}
+\`\`\`
+```
+
+### 3. Update Decision Tree (Section 4)
+
+Add step between current Step 3 and Step 4:
+```markdown
+### Step 3b — Does the menu open then immediately close?
+- Add `console.log` to both open and close handlers
+- Check if click event is bubbling to document listener
+
+If opens then closes:
+- Class H (click-outside race condition)
+```
+
+### 4. Add Case Study Section (New Section 10)
+
+Create a real-world case study documenting the Morning Brew fix:
+```markdown
+## 10) Case Study: Click-Outside Race Condition
+
+**Project:** Morning Brew Collective  
+**Date:** January 2026
+
+### Symptom
+Mobile hamburger menu visible but clicking it had no effect.
+
+### Initial Hypothesis
+Static HTML issue - JavaScript not hydrating.
+
+### Actual Root Cause
+`handleClickOutside` in `header.tsx` was attached to `document` on mount...
+[Full walkthrough of diagnosis and fix]
+```
+
+### 5. Update Troubleshooting Worksheet (Section 8)
+
+Add new question:
+```markdown
+**Step 3b: Opens then immediately closes?**
+- Console log in toggle vs click-outside handler?
+- Trigger excluded from click-outside check? (Yes/No)
+```
+
+---
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| [docs/MOBILE_NAVIGATION_SKILLS_HANDBOOK_TAILWIND_REACT_SHADCN.md](file:///home/project/authentic-kopitiam/docs/MOBILE_NAVIGATION_SKILLS_HANDBOOK_TAILWIND_REACT_SHADCN.md) | All enhancements |
+
+---
+
+## Verification
+
+After changes:
+- [ ] Document retains existing structure
+- [ ] New Class H properly documented
+- [ ] Anti-pattern 6 is clear and actionable
+- [ ] Case study provides sufficient diagnostic detail
+- [ ] Line count increase is reasonable (~80-100 new lines)

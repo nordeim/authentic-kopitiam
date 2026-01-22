@@ -1,0 +1,159 @@
+# Implementation Plan: Mobile Navigation Fix
+
+## Problem Statement
+The mobile navigation menu (hamburger icon) is visible but clicking it does not display the menu items.
+
+**Screenshot Evidence:** [mobile_mode_nav_bar_menu_not_working.png](file:///home/project/authentic-kopitiam/mobile_mode_nav_bar_menu_not_working.png)  
+**Affected File:** [mobile_landing_page.html](file:///home/project/authentic-kopitiam/mobile_landing_page.html) (static HTML export)
+
+---
+
+## Root Cause Analysis
+
+### Classification: Class F - JavaScript State Bug
+
+Based on the MOBILE_NAVIGATION_SKILLS_HANDBOOK taxonomy:
+
+| Symptom | Observed |
+|---------|----------|
+| Menu button exists | ✅ Yes (`<button class="menu-toggle">`) |
+| Menu container exists | ✅ Yes (`<div id="mobile-menu">`) |
+| Transform state | Hidden (`translateX(100%)`) |
+| JS changes state | ❌ **Not executing** |
+
+**Root Cause:** The [mobile_landing_page.html](file:///home/project/authentic-kopitiam/mobile_landing_page.html) file is a **static HTML snapshot** of the rendered page. When opened directly in a browser (not via Next.js dev server), JavaScript does not hydrate, so React state changes never occur.
+
+---
+
+## Verification Required
+
+Before implementing a fix, we need to confirm:
+
+1. **Is this issue on the live dev server or only in the static HTML file?**
+   - If dev server: Investigate hydration/client component issues
+   - If static HTML only: Expected behavior (static HTML has no interactivity)
+
+2. **Test on dev server:**
+   ```bash
+   cd frontend && npm run dev
+   # Open http://localhost:3000 in mobile device emulation
+   # Click hamburger menu
+   ```
+
+---
+
+## Proposed Fix
+
+### If issue persists on dev server:
+
+The [MobileMenu](file:///home/project/authentic-kopitiam/frontend/src/components/ui/mobile-menu.tsx#20-96) component is already marked `'use client'`, so it should hydrate properly. However, the inline `<style jsx>` in [mobile-menu.tsx](file:///home/project/authentic-kopitiam/frontend/src/components/ui/mobile-menu.tsx) may be causing issues.
+
+#### [MODIFY] [mobile-menu.tsx](file:///home/project/authentic-kopitiam/frontend/src/components/ui/mobile-menu.tsx)
+
+**Change 1:** Move inline styles to CSS file for better reliability
+
+```diff
+- <style jsx>{`
+-   .mobile-menu__close { ... }
+-   .mobile-menu__link { ... }
+- `}</style>
++ // Remove <style jsx> block and move to globals.css
+```
+
+#### [MODIFY] [globals.css](file:///home/project/authentic-kopitiam/frontend/src/styles/globals.css)
+
+**Add mobile menu component styles:**
+
+```css
+/* Mobile menu styles */
+.mobile-menu__close {
+  position: absolute;
+  top: var(--spacing-6);
+  right: var(--spacing-6);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--color-cream-white);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-menu__link {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-cream-white);
+  transition: color var(--duration-normal) var(--ease-smooth);
+  text-decoration: none;
+}
+
+.mobile-menu__link:hover {
+  color: var(--color-sunrise-amber);
+}
+```
+
+---
+
+## Verification Plan
+
+### Manual Testing
+1. Start dev server: `cd frontend && npm run dev`
+2. Open http://localhost:3000 in browser
+3. Open DevTools → toggle device toolbar (mobile view, 390×844)
+4. Click hamburger menu icon
+5. **Expected:** Menu slides in from right
+6. Click a menu link
+7. **Expected:** Menu closes
+8. Press Escape key
+9. **Expected:** Menu closes
+
+### Keyboard Testing
+- [ ] Tab reaches menu button
+- [ ] Enter/Space opens menu
+- [ ] Escape closes menu
+- [ ] Focus returns to button after close
+
+---
+
+## Alternative: Static HTML Enhancement
+
+If the requirement is for [mobile_landing_page.html](file:///home/project/authentic-kopitiam/mobile_landing_page.html) to work standalone (without Next.js), we need to add vanilla JavaScript:
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.querySelector('.menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    const closeBtn = menu.querySelector('.mobile-menu__close');
+    const links = menu.querySelectorAll('.mobile-menu__link');
+    
+    const setOpen = (open) => {
+      menu.style.transform = open ? 'translateX(0)' : 'translateX(100%)';
+      toggle.setAttribute('aria-expanded', open);
+    };
+    
+    toggle?.addEventListener('click', () => setOpen(true));
+    closeBtn?.addEventListener('click', () => setOpen(false));
+    links.forEach(a => a.addEventListener('click', () => setOpen(false)));
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    });
+  });
+</script>
+```
+
+---
+
+## Next Steps
+
+1. [ ] Verify issue on live dev server (not static HTML)
+2. [ ] If verified, apply CSS changes to globals.css
+3. [ ] Remove `<style jsx>` from mobile-menu.tsx
+4. [ ] Run verification protocol

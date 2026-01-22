@@ -1,0 +1,22 @@
+# Task: Authentication Audit & Implementation Plan
+
+## Objective
+Audit codebase for user/admin authentication, then create phased implementation plan if missing.
+
+## Phase 1: Codebase Audit
+- [/] Check backend auth middleware
+- [ ] Check Laravel auth configuration
+- [ ] Check admin routes protection
+- [ ] Check order placement flow
+- [ ] Check frontend auth state
+- [ ] Identify existing auth patterns
+
+## Phase 2: Gap Analysis
+- [ ] Document missing features
+- [ ] Research enterprise auth options
+- [ ] Evaluate Laravel Sanctum vs Passport vs Breeze
+
+## Phase 3: Implementation Planning
+- [ ] Create phased implementation plan
+- [ ] Validate against codebase architecture
+- [ ] Request user approval

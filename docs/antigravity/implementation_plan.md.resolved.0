@@ -1,0 +1,138 @@
+# Implementation Plan: CLAUDE.md Enhancement
+
+## Goal
+Transform CLAUDE.md from a status document into a **comprehensive agent initialization handbook** that enables new coding agents to independently handle PRs.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Restructure Approach:** This plan proposes reorganizing CLAUDE.md around a WHAT/WHY/HOW framework. Current content will be preserved but repositioned for clarity.
+
+---
+
+## Proposed Structure
+
+### New Document Outline
+
+```
+1. QUICK START (NEW)
+   - 30-second orientation
+   - First actions checklist
+   - Critical files to read
+
+2. WHAT: Project Overview
+   - Executive Summary (existing, refined)
+   - Technology Stack (existing, updated)
+   - Current Project State (existing, corrected)
+
+3. WHY: Design Rationale
+   - Core Philosophy (existing)
+   - Critical Technical Decisions (existing, enhanced)
+   - Singapore Compliance Requirements (existing)
+
+4. HOW: Implementation Guide
+   - File Hierarchy (NEW - detailed map)
+   - Component Ownership Matrix (NEW)
+   - PR Handling Decision Tree (NEW)
+   - Operational Commands (existing)
+   - Common Pitfalls (existing)
+
+5. REFERENCE: Quick Lookup
+   - Verification Commands Cheatsheet (NEW)
+   - Test Coverage Status (existing, corrected)
+   - Key Reference Documents (existing)
+```
+
+---
+
+## Proposed Changes
+
+### Section 1: Quick Start (NEW)
+
+#### [NEW] Quick Start Section
+Add at the very top of the document, before Executive Summary.
+
+**Content:**
+- 30-second project orientation
+- 5 critical files to read first
+- First verification commands
+- "Before you code" checklist
+
+---
+
+### Section 2: Corrections to Existing Content
+
+#### [MODIFY] [CLAUDE.md](file:///home/project/authentic-kopitiam/CLAUDE.md)
+
+**Service Line Count Corrections (Lines 41, 287-298):**
+```diff
+-   Services: PaymentService (382 lines), StripeService (238 lines), PayNowService (244 lines)
++   Services: PaymentService (410 lines), StripeService (182 lines), PayNowService (244 lines), InventoryService (373 lines), PdpaService (283 lines), InvoiceService (182 lines)
+```
+
+**Controller Count Correction (Line 43, 83-84):**
+```diff
+-   Backend Controllers | 6 controllers
++   Backend Controllers | 7 controllers
+```
+
+**Frontend Test Status Correction (Lines 23, 152-156):**
+```diff
+-*   Testing: Vitest (planned), Playwright (planned) - infrastructure being built.
++*   Testing: Vitest (1 unit test), Playwright (2 E2E tests) - actively expanding.
+```
+
+**Store Count Correction (Line 22):**
+```diff
+-*   State: Zustand for client state (Cart, Filters, Payment).
++*   State: Zustand for client state (Cart, Filters, Payment, Toast) + utilities (Expiration, Persistence).
+```
+
+---
+
+### Section 3: New Content Additions
+
+#### [NEW] File Hierarchy Section
+Add comprehensive file map with descriptions of key directories and files.
+
+**Key Directories:**
+- `/backend/app/Services/` - Business logic layer
+- `/backend/app/Http/Controllers/Api/` - REST endpoints
+- `/frontend/src/components/payment/` - Payment UI components
+- `/frontend/src/components/ui/` - Retro design system
+- `/frontend/src/store/` - Zustand state management
+
+#### [NEW] Component Ownership Matrix
+Table mapping features to their owning files for quick lookup during PRs.
+
+#### [NEW] PR Handling Decision Tree
+Flowchart for agents to determine approach based on PR type:
+- Bug fix → Check test coverage first
+- New feature → Reference execution plan
+- UI change → Verify against static mockup
+- API change → Update OpenAPI docs
+
+#### [NEW] Verification Commands Cheatsheet
+Quick reference for common validation commands.
+
+---
+
+## Verification Plan
+
+### Automated Verification
+```bash
+# Verify document structure
+wc -l CLAUDE.md  # Should be ~500-600 lines
+
+# Verify statistics match reality
+wc -l backend/app/Services/*.php  # Confirm line counts
+ls -1 backend/app/Http/Controllers/Api/*.php | wc -l  # Should be 7
+```
+
+### Manual Verification
+- [ ] All service line counts verified
+- [ ] All controller counts verified
+- [ ] Frontend test status accurate
+- [ ] File hierarchy matches actual structure

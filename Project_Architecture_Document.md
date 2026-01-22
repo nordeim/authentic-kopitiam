@@ -200,18 +200,59 @@ src/app/
 
 ---
 
-### Decision 9: InvoiceNow (PEPPOL) Compliance
+### Decision 10: Authentication & Authorization Architecture
 
-**Context:** Singapore B2B transactions require InvoiceNow readiness.
+**Context:** Enterprise-grade security required for customer accounts, admin access, and order protection.
 
 **Decision:**
-Implement native PHP XML generation using `DOMDocument` to create valid PEPPOL BIS Billing 3.0 (UBL 2.1) files.
+Implement Laravel Sanctum SPA authentication with Role-Based Access Control (RBAC).
 
-**Technical Implementation:**
-- **Namespace:** `urn:oasis:names:specification:ubl:schema:xsd:Invoice-2`
-- **CustomizationID:** `urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0:singapore:1.0.0`
-- **Tax Scheme:** `GST` with category code `S` (Standard Rated).
-- **Precision:** XML amounts formatted to 2 decimal places, unit prices to 4.
+**Architecture:**
+
+```mermaid
+graph TB
+    subgraph Public Routes
+        A["/api/v1/login"] --> B["throttle:auth-login (5/min)"]
+        C["/api/v1/register"] --> D["throttle:auth-register (3/min)"]
+    end
+
+    subgraph Protected Routes
+        E["/api/v1/orders"] --> F["auth:sanctum"]
+        G["/api/v1/payments"] --> F
+    end
+
+    subgraph Admin Routes
+        H["/api/v1/admin/*"] --> I["auth:sanctum + admin"]
+        I --> J["EnsureUserIsAdmin Middleware"]
+    end
+
+    subgraph Frontend Protection
+        K["ProtectedRoute HOC"] --> L{"Authenticated?"}
+        L -->|No| M["/login"]
+        L -->|Yes| N{"requireAdmin?"}
+        N -->|Yes + Not Admin| O["/unauthorized"]
+        N -->|Yes + Admin| P["Admin Dashboard"]
+        N -->|No| Q["Protected Content"]
+    end
+```
+
+**Security Features:**
+- **Token Expiration:** 24 hours (configurable in `sanctum.php`)
+- **Rate Limiting:** 5 login/min, 3 register/min per IP
+- **Password Policy:** 8+ chars, mixed case, numbers, symbols
+- **Audit Logging:** PDPA-compliant pseudonymized logs (365-day retention)
+- **Single Session:** Previous tokens revoked on new login
+
+**File Additions:**
+| Layer | File | Purpose |
+|-------|------|---------|
+| Backend | `AuthController.php` | Auth endpoints |
+| Backend | `EnsureUserIsAdmin.php` | Admin middleware |
+| Backend | `AuthAuditService.php` | Security logging |
+| Frontend | `auth-store.ts` | Auth state management |
+| Frontend | `ProtectedRoute.tsx` | Route protection HOC |
+| Frontend | `/login`, `/register` | Auth pages |
+| Frontend | `/unauthorized` | 403 error page |
 
 ---
 

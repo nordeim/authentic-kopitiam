@@ -131,6 +131,33 @@ This is not a generic e-commerce site—it is a **digital resurrection of a heri
 | PayNow | 256x256 QR, 15-min expiry, manual fallback | ✅ |
 | InvoiceNow | UBL 2.1 XML via `InvoiceService` | ✅ |
 
+### Authentication & Security (Phase 9) ✅
+
+| Feature | Implementation | Status |
+|---------|----------------|--------|
+| Token Auth | Laravel Sanctum SPA | ✅ |
+| Role-Based Access | `admin` middleware + `role` column | ✅ |
+| Rate Limiting | 5 login/min, 3 register/min | ✅ |
+| Token Expiration | 24-hour validity (configurable) | ✅ |
+| Password Rules | 8+ chars, mixed case, numbers, symbols | ✅ |
+| Audit Logging | PDPA-compliant pseudonymized logs | ✅ |
+
+#### Authentication Files
+
+**Backend:**
+- `AuthController.php` - Register, login, logout, me, refresh endpoints
+- `EnsureUserIsAdmin.php` - Admin role middleware
+- `AuthAuditService.php` - PDPA-compliant audit logging
+- `StrongPassword.php` - Enterprise password validation rule
+- `config/sanctum.php` - 24-hour token expiration
+
+**Frontend:**
+- `auth-store.ts` - Zustand store for auth state
+- `auth-api.ts` - API client for auth endpoints
+- `AuthProvider.tsx` - React context for auth state
+- `protected-route.tsx` - HOC for route protection
+- `/login` and `/register` pages with retro styling
+
 ---
 
 ## 🔧 HOW: Implementation Guide

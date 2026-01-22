@@ -1,0 +1,48 @@
+# Walkthrough: Mobile Navigation Fix & Handbook Enhancement
+
+**Date:** January 23, 2026
+
+---
+
+## Part 1: Mobile Navigation Fix
+
+### Root Cause
+**Class H Bug:** Event propagation race condition - `handleClickOutside` immediately closed menu after toggle opened it.
+
+### Fix Applied
+**File:** `header.tsx` (lines 41-57)
+```tsx
+// Added menuToggle to exclusion check
+if (!mobileMenu.contains(target) && !menuToggle?.contains(target)) {
+  setIsMobileMenuOpen(false);
+}
+```
+
+**Build:** ✅ SUCCESS
+
+---
+
+## Part 2: Handbook Enhancement
+
+**File:** `docs/MOBILE_NAVIGATION_SKILLS_HANDBOOK_TAILWIND_REACT_SHADCN.md`  
+**Lines:** 452 → 589 (+137 lines)
+
+### Changes Made
+
+| Section | Enhancement |
+|---------|-------------|
+| **3) Root-Cause Taxonomy** | Added Class H with code examples |
+| **4) Decision Tree** | Added Step 3b for race condition |
+| **6) Anti-Patterns** | Added Anti-Pattern 6 |
+| **8) Worksheet** | Added trigger exclusion check |
+| **9) Agent Instructions** | Added click-outside rule |
+| **10) Case Study** | New section with real-world walkthrough |
+
+---
+
+## Key Lessons Documented
+
+1. Log both open AND close handlers when debugging state
+2. Document listeners fire after component handlers (bubbling)
+3. Click-outside logic must exclude trigger elements
+4. Race conditions are invisible in static HTML inspection

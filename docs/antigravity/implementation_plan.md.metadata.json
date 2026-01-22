@@ -1,0 +1,6 @@
+{
+  "artifactType": "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary": "Comprehensive 4-phase implementation plan for enterprise-grade user authentication and admin dashboard protection using Laravel Sanctum SPA authentication, role-based access control, and Next.js auth provider.",
+  "updatedAt": "2026-01-22T17:22:41.302393736Z",
+  "version": "4"
+}
