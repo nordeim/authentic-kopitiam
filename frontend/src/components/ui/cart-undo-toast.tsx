@@ -43,8 +43,8 @@ export function CartUndoToast({ itemName, onUndo, onDismiss }: CartUndoToastProp
         .cart-undo-toast {
           display: flex;
           align-items: center;
-          gap: var(--space-3, 0.75rem);
-          padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+          gap: var(--spacing-3, 0.75rem);
+          padding: var(--spacing-3, 0.75rem) var(--spacing-4, 1rem);
           background: rgb(var(--color-mocha-dark));
           border: 1px solid rgb(var(--color-mocha-dark));
           border-radius: var(--radius-lg, 0.5rem);
@@ -64,14 +64,14 @@ export function CartUndoToast({ itemName, onUndo, onDismiss }: CartUndoToastProp
         .cart-undo-toast__actions {
           display: flex;
           align-items: center;
-          gap: var(--space-3, 0.75rem);
+          gap: var(--spacing-3, 0.75rem);
         }
 
         .cart-undo-toast__undo {
           background: rgba(255, 255, 255, 0.1);
           border: none;
           border-radius: var(--radius-md, 0.375rem);
-          padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+          padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
           cursor: pointer;
           font-family: var(--font-body);
           font-size: 0.85rem;
@@ -80,7 +80,7 @@ export function CartUndoToast({ itemName, onUndo, onDismiss }: CartUndoToastProp
           color: rgb(var(--color-cream-white));
           display: flex;
           align-items: center;
-          gap: var(--space-1, 0.25rem);
+          gap: var(--spacing-1, 0.25rem);
         }
 
         .cart-undo-toast__undo:hover {
@@ -102,7 +102,7 @@ export function CartUndoToast({ itemName, onUndo, onDismiss }: CartUndoToastProp
           background: rgba(255, 255, 255, 0.1);
           border: none;
           border-radius: var(--radius-full, 50%);
-          padding: var(--space-1, 0.25rem);
+          padding: var(--spacing-1, 0.25rem);
           cursor: pointer;
           color: rgb(var(--color-cream-white));
           display: flex;

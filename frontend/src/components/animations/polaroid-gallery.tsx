@@ -28,7 +28,7 @@ export function PolaroidGallery({ photos }: PolaroidGalleryProps) {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 'var(--space-4)',
+          gap: 'var(--spacing-4)',
         }}
       >
         {photos.map((photo, index) => (
@@ -37,8 +37,8 @@ export function PolaroidGallery({ photos }: PolaroidGalleryProps) {
             className="polaroid"
             style={{
               background: 'rgb(var(--color-cream-white))',
-              padding: 'var(--space-3)',
-              paddingBottom: 'var(--space-8)',
+              padding: 'var(--spacing-3)',
+              paddingBottom: 'var(--spacing-8)',
               borderRadius: 'var(--radius-md)',
               boxShadow: 'var(--shadow-lg)',
               transform: `rotate(${photo.rotationOffset ?? rotationOffsets[index % 4]}deg)`,
@@ -79,7 +79,7 @@ export function PolaroidGallery({ photos }: PolaroidGalleryProps) {
                 fontFamily: 'var(--font-display)',
                 fontSize: '0.875rem',
                 color: 'rgb(var(--color-mocha-medium))',
-                marginTop: 'var(--space-3)',
+                marginTop: 'var(--spacing-3)',
               }}
             >
               {photo.caption}

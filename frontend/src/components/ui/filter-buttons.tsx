@@ -18,7 +18,7 @@ export function FilterButton({ category, isActive, onClick }: FilterButtonProps)
     >
       <style jsx>{`
         .filter-button {
-          padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+          padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
           border: 2px solid rgb(var(--color-mocha-light));
           border-radius: var(--radius-full, 50%);
           background: rgb(var(--color-cream-white));
@@ -85,14 +85,14 @@ export function FilterButtons({ className = '' }: FilterButtonsProps) {
       <style jsx>{`
         .filter-buttons {
           display: flex;
-          gap: var(--space-2, 0.5rem);
+          gap: var(--spacing-2, 0.5rem);
           flex-wrap: wrap;
           justify-content: center;
         }
 
         @media (min-width: 768px) {
           .filter-buttons {
-            gap: var(--space-3, 0.75rem);
+            gap: var(--spacing-3, 0.75rem);
           }
         }
       `}</style>

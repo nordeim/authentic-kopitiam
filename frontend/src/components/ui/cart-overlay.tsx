@@ -84,7 +84,7 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: var(--space-5, 1.25rem);
+          padding: var(--spacing-5, 1.25rem);
           border-bottom: 1px solid rgb(var(--color-mocha-light));
         }
 
@@ -99,7 +99,7 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
           background: rgb(var(--color-mocha-light));
           border: none;
           border-radius: var(--radius-full, 50%);
-          padding: var(--space-2, 0.5rem);
+          padding: var(--spacing-2, 0.5rem);
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -120,7 +120,7 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
 
         .cart-overlay__body {
           overflow-y: auto;
-          padding: var(--space-5, 1.25rem);
+          padding: var(--spacing-5, 1.25rem);
           max-height: calc(85vh - 80px);
         }
 
@@ -129,8 +129,8 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: var(--space-12, 3rem);
-          gap: var(--space-4, 1rem);
+          padding: var(--spacing-12, 3rem);
+          gap: var(--spacing-4, 1rem);
         }
 
         .cart-overlay__empty-icon {
@@ -149,14 +149,14 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
         .cart-overlay__items {
           display: flex;
           flex-direction: column;
-          gap: var(--space-3, 0.75rem);
+          gap: var(--spacing-3, 0.75rem);
         }
 
         .cart-overlay__item {
           display: grid;
           grid-template-columns: 1fr auto auto;
           align-items: center;
-          padding: var(--space-3, 0.75rem);
+          padding: var(--spacing-3, 0.75rem);
           border-bottom: 1px solid rgb(var(--color-honey-light));
         }
 
@@ -185,7 +185,7 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
         }
 
         .cart-overlay__footer {
-          padding: var(--space-5, 1.25rem);
+          padding: var(--spacing-5, 1.25rem);
           border-top: 1px solid rgb(var(--color-mocha-light));
           background: rgb(var(--color-honey-light));
         }
@@ -193,7 +193,7 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
         .cart-overlay__summary {
           display: flex;
           flex-direction: column;
-          gap: var(--space-2, 0.5rem);
+          gap: var(--spacing-2, 0.5rem);
         }
 
         .cart-overlay__summary-row {
@@ -220,8 +220,8 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
 
         .cart-overlay__actions {
           display: flex;
-          gap: var(--space-3, 0.75rem);
-          padding-top: var(--space-4, 1rem);
+          gap: var(--spacing-3, 0.75rem);
+          padding-top: var(--spacing-4, 1rem);
         }
 
         .cart-overlay__clear {
@@ -229,14 +229,14 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
           color: rgb(var(--color-cream-white));
           border: none;
           border-radius: var(--radius-full, 50%);
-          padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+          padding: var(--spacing-3, 0.75rem) var(--spacing-4, 1rem);
           font-family: var(--font-body);
           font-weight: 600;
           font-size: 0.9rem;
           cursor: pointer;
           display: flex;
           align-items: center;
-          gap: var(--space-2, 0.5rem);
+          gap: var(--spacing-2, 0.5rem);
           transition: all 0.2s;
         }
 
@@ -257,7 +257,7 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
           color: rgb(var(--color-cream-white));
           border: none;
           border-radius: var(--radius-full, 50%);
-          padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+          padding: var(--spacing-3, 0.75rem) var(--spacing-4, 1rem);
           font-family: var(--font-body);
           font-weight: 600;
           font-size: 0.95rem;
@@ -265,7 +265,7 @@ export function CartOverlay({ isOpen, onClose }: CartOverlayProps) {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: var(--space-2, 0.5rem);
+          gap: var(--spacing-2, 0.5rem);
           transition: all 0.2s;
         }
 

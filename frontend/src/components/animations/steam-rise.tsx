@@ -38,7 +38,7 @@ export function SteamRise({
     { delay: 0.6, x: 15 },
   ];
 
-  const gap = 8; // var(--space-2) approximation
+  const gap = 8; // var(--spacing-2) approximation
 
   return (
     <>

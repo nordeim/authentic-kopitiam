@@ -58,7 +58,7 @@ export function AddToCartButton({
     >
       <style jsx>{`
         .add-to-cart-button {
-          padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+          padding: var(--spacing-3, 0.75rem) var(--spacing-4, 1rem);
           background: rgb(var(--color-terracotta-warm));
           border: none;
           border-radius: var(--radius-full, 50%);
@@ -70,7 +70,7 @@ export function AddToCartButton({
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: var(--space-2, 0.5rem);
+          gap: var(--spacing-2, 0.5rem);
           transition: all 0.2s;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }

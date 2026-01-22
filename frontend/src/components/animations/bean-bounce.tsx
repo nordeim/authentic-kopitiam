@@ -65,7 +65,7 @@ export function BeanBounce({
         className="beans"
         style={{
           display: 'flex',
-          gap: 'var(--space-3)',
+          gap: 'var(--spacing-3)',
           alignItems: 'center',
           justifyContent: 'center',
         }}

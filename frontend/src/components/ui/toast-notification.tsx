@@ -75,7 +75,7 @@ export function Toaster({ position = 'top-right' }: ToasterProps) {
           z-index: 9999;
           display: flex;
           flex-direction: column;
-          gap: var(--space-3, 0.75rem);
+          gap: var(--spacing-3, 0.75rem);
           pointer-events: none;
         }
 
