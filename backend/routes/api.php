@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\PdpaConsentController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\Api\InvoiceController;
 
 // API Version Group
 Route::prefix('v1')->group(function () {
@@ -25,6 +26,9 @@ Route::prefix('v1')->group(function () {
 
   Route::put('orders/{id}/status', [OrderController::class, 'updateStatus'])
     ->middleware(['order.ownership']);
+
+  // Invoice Routes
+  Route::get('orders/{id}/invoice/xml', [InvoiceController::class, 'downloadXml']);
 
   // Locations Resource - Explicit GET routes (apiResource only() not working reliably)
   Route::get('locations', [LocationController::class, 'index']);

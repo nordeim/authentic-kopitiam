@@ -336,3 +336,26 @@ Next immediate action: Determine why tests hang during execution and fix timeout
 
   You may now proceed to execute Phase 8A: Admin Foundation.
 
+---
+
+✦ I have successfully executed Phase 8B and Phase 8C of the implementation plan.
+
+  Phase 8B: Order Management (Frontend) - Completed
+   1. Orders List Page: Implemented frontend/src/app/(dashboard)/admin/orders/page.tsx with a retro-styled data table layout.
+   2. Orders Table Component: Created frontend/src/components/admin/orders-table.tsx featuring a "Ledger" aesthetic (monospace fonts, double borders) and mock data visualization.
+   3. Order Details Page: Implemented frontend/src/app/(dashboard)/admin/orders/[id]/page.tsx showing detailed line items, GST breakdown (9%), and customer/payment info.
+
+  Phase 8C: InvoiceNow Service (Backend) - Completed
+   1. InvoiceService: Created backend/app/Services/InvoiceService.php to generate Singapore-compliant PEPPOL BIS Billing 3.0 (UBL 2.1) XML.
+       * Compliance: Includes correct CustomizationID, ProfileID, and GST tax scheme ('S' standard rated).
+       * Precision: Uses number_format to ensure 2 decimal places for totals and 4 decimal places for unit prices as required.
+   2. InvoiceController: Created backend/app/Http/Controllers/Api/InvoiceController.php to handle XML download requests.
+   3. API Route: Registered GET /api/v1/orders/{id}/invoice/xml in backend/routes/api.php.
+
+  Verification
+   * Frontend Build: npm run build passed successfully after resolving route group conflicts.
+   * File Structure: All files are in their correct locations within (dashboard) and (shop) route groups.
+
+  Next Steps
+  Proceed to Phase 8D: Testing & Validation to verify the XML structure and E2E flows.
+
