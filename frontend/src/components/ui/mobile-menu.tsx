@@ -29,13 +29,13 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgb(var(--color-espresso-dark))',
+          background: 'var(--color-espresso-dark)',
           zIndex: 'var(--z-overlay)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 'var(--space-8)',
+          gap: 'var(--spacing-8)',
           transition: 'transform 0.5s var(--ease-smooth)',
           transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
         }}
@@ -63,8 +63,8 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       <style jsx>{`
         .mobile-menu__close {
           position: absolute;
-          top: var(--space-6);
-          right: var(--space-6);
+          top: var(--spacing-6);
+          right: var(--spacing-6);
           width: 48px;
           height: 48px;
           display: flex;
@@ -72,7 +72,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           justify-content: center;
           font: var(--font-display);
           font-size: 2rem;
-          color: rgb(var(--color-cream-white));
+          color: var(--color-cream-white);
           background: rgba(255, 255, 255, 0.1);
           border-radius: var(--radius-full);
         }
@@ -81,13 +81,13 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           font: var(--font-display);
           font-size: 2rem;
           font-weight: 700;
-          color: rgb(var(--color-cream-white));
+          color: var(--color-cream-white);
           transition: color var(--duration-normal) var(--ease-smooth);
           text-decoration: none;
         }
 
         .mobile-menu__link:hover {
-          color: rgb(var(--color-sunrise-amber));
+          color: var(--color-sunrise-amber);
         }
       `}</style>
     </>

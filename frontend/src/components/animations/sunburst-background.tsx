@@ -1,14 +1,12 @@
 'use client';
 
 interface SunburstBackgroundProps {
-  color1?: string;
-  color2?: string;
+  opacity?: number;
   duration?: number;
 }
 
 export function SunburstBackground({
-  color1 = 'var(--color-sunrise-amber)',
-  color2 = 'var(--color-cream-white)',
+  opacity = 0.6,
   duration = 120,
 }: SunburstBackgroundProps) {
   return (
@@ -30,32 +28,17 @@ export function SunburstBackground({
         }
       `}</style>
       <div
-        className="sunburst-background"
+        className="sunburst-background pointer-events-none absolute top-[-50%] left-1/2 w-[200%] h-[200%] z-0"
         style={{
-          position: 'absolute',
-          top: '-50%',
-          left: '50%',
           transform: 'translateX(-50%)',
-          width: '200%',
-          height: '200%',
-          pointerEvents: 'none',
-          zIndex: 0,
+          backgroundImage: 'var(--texture-sunburst)',
+          backgroundSize: '800px 800px',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: opacity,
+          animation: `slowRotate ${duration}s linear infinite`,
         }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: `repeating-conic-gradient(
-              from 0deg,
-              ${color1} 0deg 10deg,
-              ${color2} 10deg 20deg
-            )`,
-            opacity: 0.6,
-            animation: `slowRotate ${duration}s linear infinite`,
-          }}
-        />
-      </div>
+      />
     </>
   );
 }
