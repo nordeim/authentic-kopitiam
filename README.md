@@ -21,23 +21,32 @@ Morning Brew Collective is a **Singapore-first headless e-commerce platform** th
 
 ---
 
-## ✅ Current Project Status (January 22, 2026)
+## ⚠️ Current Project Status (January 22, 2026)
 
-### Operations & Admin (Phase 8) ✅ 100% COMPLETE
+### Operations & Admin (Phase 8) ⚠️ FUNCTIONALLY COMPLETE
+
+**✅ IMPLEMENTED**:
+- **Admin Dashboard**: Route structure and InvoiceService complete (`/admin`) 
+- **Route Architecture**: `(shop)` and `(dashboard)` route groups implemented
+- **Order Management**: Backend CRUD and InvoiceService operational
+- **InvoiceNow Integration**: UBL 2.1 XML generation functional (`InvoiceService.php`)
+
+**⚠️ BLOCKING ISSUES**:
+- **TypeScript Compilation**: 42 errors prevent frontend build
+- **Test Infrastructure**: Frontend tests not yet configured
+- **Production Readiness**: Cannot deploy with compilation errors
+
+### Frontend Architecture (Phase 2 & 5.5) ⚠️ 85% COMPLETE
 
 **✅ COMPLETED**:
-- **Admin Dashboard**: A retro-utilitarian "Manager's Office" interface (`/admin`) separate from the customer shop.
-- **Route Architecture**: Refactored Next.js app into `(shop)` and `(dashboard)` route groups to support distinct layouts and metadata.
-- **Order Management**: Full CRUD capabilities for orders with status workflow (Pending -> Preparing -> Completed).
-- **InvoiceNow Integration**: Built-in PHP service generates valid **PEPPOL BIS Billing 3.0 (UBL 2.1)** XML files for B2B compliance.
-- **Ledger Design**: Admin UI features monospace fonts, double-borders, and high-contrast tables inspired by physical accounting ledgers.
+- **Design System**: Tailwind CSS v4.0 migration complete
+- **Payment UI**: 8 components implemented (1,836 lines)
+- **Backend Services**: All 5 services operational (1,674 lines)
 
-### Frontend Architecture (Phase 2 & 5.5) ✅ 100% COMPLETE
-
-**✅ COMPLETED**:
-- **Design System**: Fully migrated to **Tailwind CSS v4.0** (CSS-first configuration).
-- **Payment UI**: 8 production-ready components (PayNow QR, Stripe Elements, Status Tracker).
-- **Compliance**: Frontend types and calculations now strictly use `number` (decimal) to align with backend `DECIMAL(10,4)` precision.
+**❌ BLOCKING**:
+- **TypeScript Errors**: 42 compilation errors in checkout pages
+- **Test Coverage**: No frontend test suite configured
+- **Visual Testing**: Percy/visual regression not implemented
 
 ### Backend Domain (Phase 4) ✅ 100% COMPLETE
 
@@ -78,25 +87,57 @@ make install
 # 5. Start all services
 make up
 
+# Wait 60 seconds for services to initialize
+
 # Services will be available at:
 # Shop: http://localhost:3000
-# Admin Dashboard: http://localhost:3000/admin
 # Backend API: http://localhost:8000  
 # Mailpit: http://localhost:8025
-# Database: localhost:5432
+```
+
+### Known Issues
+
+**TypeScript Compilation** (BLOCKING):
+```bash
+# 42 TypeScript errors in checkout pages
+# See: docs/known-issues.md for details
+# Fix ETA: 2-3 hours
+```
+
+**Test Infrastructure** (INCOMPLETE):
+```bash
+# Backend tests work:
+make test-backend
+
+# Frontend tests NOT YET configured:
+# - Vitest configuration missing
+# - Playwright tests not implemented
 ```
 
 ### Testing
 
 ```bash
-# Run backend payment & invoice tests (PHPUnit)
+# Run backend tests (functional ✅)
 make test-backend
 
-# Run frontend component tests (Vitest)
-make test-frontend
-
-# Run full suite
+# Run full test suite (after fixing TS errors)
 make test
+```
+
+### First-Time Verification
+
+```bash
+# 1. Verify backend health
+make logs backend | grep "ready"
+
+# 2. Check API response
+curl http://localhost:8000/api/v1/health
+
+# 3. Check for TypeScript errors (will show 42 errors)
+cd frontend && npm run typecheck
+
+# 4. Run backend tests (should pass)
+make test-backend
 ```
 
 ---
@@ -157,7 +198,11 @@ Copyright © 2026 Morning Brew Collective. All rights reserved.
 ---
 
 <div align="center">
-<strong>🏆 Project State: Production Ready</strong>
+<strong>⚠️ Project State: Feature Complete, Pre-Production</strong>
 <br>
-Targeting: 99.9% Uptime, <100ms API Latency, 100% Compliance
+Blocking: TypeScript Compilation (42 errors) | Test Infrastructure
+<br>
+Target: 99.9% Uptime, <100ms API Latency, 100% Compliance
 </div>
+
+**Note**: Project is functionally complete but requires TypeScript error fixes and test infrastructure completion before production deployment.
