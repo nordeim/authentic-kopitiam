@@ -41,13 +41,17 @@ export function Header() {
   const handleClickOutside = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
     const mobileMenu = document.getElementById('mobile-menu');
+    const menuToggle = document.querySelector('.menu-toggle');
+    const cartBtn = document.querySelector('.cart-btn');
     const cartOverlay = document.getElementById('cart-overlay');
 
-    if (mobileMenu && !mobileMenu.contains(target)) {
+    // Only close mobile menu if click is outside BOTH the menu AND the toggle button
+    if (mobileMenu && !mobileMenu.contains(target) && !menuToggle?.contains(target)) {
       setIsMobileMenuOpen(false);
     }
 
-    if (cartOverlay && !cartOverlay.contains(target)) {
+    // Only close cart if click is outside BOTH the cart overlay AND the cart button
+    if (cartOverlay && !cartOverlay.contains(target) && !cartBtn?.contains(target)) {
       setIsCartOpen(false);
     }
   };

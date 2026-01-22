@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
@@ -11,85 +13,40 @@ interface NavItem {
 }
 
 const MOBILE_NAV_ITEMS: NavItem[] = [
-  { label: 'Menu', href: '#menu' },
-  { label: 'Our Story', href: '#heritage' },
-  { label: 'Visit Us', href: '#locations' },
-  { label: 'Order', href: '#order' },
+  { label: 'Menu', href: '/menu' },
+  { label: 'Our Story', href: '/heritage' },
+  { label: 'Visit Us', href: '/locations' },
+  { label: 'Order', href: '/#order' },
 ];
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   return (
-    <>
-      <div
-        id="mobile-menu"
-        className="mobile-menu"
-        aria-hidden={!isOpen}
-        aria-label="Mobile navigation menu"
-        role="dialog"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'var(--color-espresso-dark)',
-          zIndex: 'var(--z-overlay)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 'var(--spacing-8)',
-          transition: 'transform 0.5s var(--ease-smooth)',
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-        }}
+    <div
+      id="mobile-menu"
+      className={`mobile-menu ${isOpen ? 'is-open' : ''}`}
+      aria-hidden={!isOpen}
+      aria-label="Mobile navigation menu"
+      role="dialog"
+      data-open={isOpen}
+    >
+      <button
+        onClick={onClose}
+        className="mobile-menu__close"
+        aria-label="Close menu"
       >
-        <button
+        ×
+      </button>
+
+      {MOBILE_NAV_ITEMS.map(item => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="mobile-menu__link"
           onClick={onClose}
-          className="mobile-menu__close"
-          aria-label="Close menu"
         >
-          ×
-        </button>
-
-        {MOBILE_NAV_ITEMS.map(item => (
-          <a
-            key={item.href}
-            href={item.href}
-            className="mobile-menu__link"
-            onClick={onClose}
-          >
-            {item.label}
-          </a>
-        ))}
-      </div>
-
-      <style jsx>{`
-        .mobile-menu__close {
-          position: absolute;
-          top: var(--spacing-6);
-          right: var(--spacing-6);
-          width: 48px;
-          height: 48px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font: var(--font-display);
-          font-size: 2rem;
-          color: var(--color-cream-white);
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: var(--radius-full);
-        }
-
-        .mobile-menu__link {
-          font: var(--font-display);
-          font-size: 2rem;
-          font-weight: 700;
-          color: var(--color-cream-white);
-          transition: color var(--duration-normal) var(--ease-smooth);
-          text-decoration: none;
-        }
-
-        .mobile-menu__link:hover {
-          color: var(--color-sunrise-amber);
-        }
-      `}</style>
-    </>
+          {item.label}
+        </Link>
+      ))}
+    </div>
   );
 }
