@@ -1,3 +1,5 @@
+<img width="1082" height="983" alt="image" src="https://github.com/user-attachments/assets/88ca6f19-7786-420c-bc68-f84c7894fda3" />
+
 # ☕ Morning Brew Collective
 
 <div align="center">
