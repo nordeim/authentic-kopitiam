@@ -22,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Rate limiting for authentication endpoints
         // Brute force protection: 5 login attempts per minute per IP
         RateLimiter::for('auth-login', function (Request $request) {
