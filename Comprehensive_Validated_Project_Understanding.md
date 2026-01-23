@@ -68,6 +68,19 @@ The "Deep Understanding" document has been meticulously validated against the co
 
 ---
 
+## Recent changes:
+
+   1. Resolution Strategy ("Direct-to-Backend"): Validated. The frontend uses a newly created apiFetch helper that directs requests to NEXT_PUBLIC_API_URL (defaulting to http://localhost:8000/api/v1).
+   2. Implementation: Validated.
+       * frontend/src/lib/api/api-fetch.ts: Correctly implements the base URL logic, appends /v1, handles Bearer tokens from localStorage, and sets credentials: 'omit'.
+       * Refactored Components: PaymentMethodSelector, PayNowQRDisplay, usePaymentStatus, OfflineModeFallback, OrderConfirmationContent, and paymentApi have all been updated to use apiFetch and no longer contain relative /api/v1 calls.
+   3. Configuration: Validated.
+       * backend/.env.example: Cleaned of duplicates and hardcoded secrets. Includes necessary keys like FRONTEND_URL and payment configs.
+   4. Documentation: Validated & Updated.
+       * CODEBASE_DEEP_UNDERSTANDING_HANDBOOK.md has been updated to explicitly state the "No Next routes" resolution and document the direct-to-backend architecture.
+
+---
+
 ### Key Validated Architecture
 
 | Component | Technology | Validated State |
