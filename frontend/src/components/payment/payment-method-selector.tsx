@@ -7,6 +7,8 @@ import { StripeIcon } from '@/components/icons/stripe-icon';
 import { PaymentMethodCard } from './payment-method-card';
 import { usePaymentState } from '@/store/payment-store';
 import { toast } from '@/components/ui/toast-notification';
+import { apiFetch } from '@/lib/api/api-fetch';
+import { cn } from '@/lib/utils';
 
 interface PaymentMethodSelectorProps {
   orderId: string;
@@ -33,8 +35,8 @@ export function PaymentMethodSelector({
     const checkAvailability = async () => {
       try {
         const [paynowRes, stripeRes] = await Promise.all([
-          fetch('/api/v1/payments/methods/paynow/available').then(r => r.ok),
-          fetch('/api/v1/payments/methods/stripe/available').then(r => r.ok),
+          apiFetch('/payments/methods/paynow/available', undefined, { includeAuth: false }).then(r => r.ok),
+          apiFetch('/payments/methods/stripe/available', undefined, { includeAuth: false }).then(r => r.ok),
         ]);
 
         setAvailableMethods({
@@ -198,6 +200,3 @@ function ShieldCheckIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-// CSS utility
-import { cn } from '@/lib/utils';

@@ -1,6 +1,6 @@
 # Morning Brew Collective — Codebase Deep Understanding Handbook (Validated)
 
-**Purpose**
+## Purpose
 
 This document is a *single-source-of-truth onboarding handbook* for new coding agents working on `nordeim/authentic-kopitiam`.
 
@@ -18,7 +18,7 @@ A Singapore heritage kopitiam ordering + payments platform.
 - **Backend:** Laravel 12 (PHP 8.3+) API in `backend/`
 - **Infrastructure (local/dev):** Docker Compose with Postgres 16 + Redis 7 + Mailpit
 
-**Primary product flows implemented in code**
+### Primary product flows implemented in code
 
 - Browse products / locations (public endpoints exist)
 - Create orders (backend API exists)
@@ -66,7 +66,13 @@ From `docker-compose.yml`:
 
 - `NEXT_PUBLIC_API_URL=http://localhost:8000/api`
 
-### 3.2 Makefile entry points
+### 3.2 Environment examples (validated)
+
+- `backend/.env` is gitignored (not readable here).
+- `backend/.env.example` is the committed reference. It was cleaned to remove duplicated/conflicting keys and to avoid hardcoded test secrets.
+- Backend config reads Stripe/PayNow keys from `backend/config/payment.php`.
+
+### 3.3 Makefile entry points
 
 From root `Makefile`:
 
@@ -96,7 +102,19 @@ In `frontend/src/app/`:
 - `(dashboard)/layout.tsx` wraps admin area
 - `unauthorized/page.tsx` (403 page)
 
-**Important:** No Next.js `app/api/*` routes were found in the codebase (no `route.ts` under `src/app`).
+### Important note: No Next.js `app/api/*` routes
+
+No Next.js `app/api/*` routes were found in the codebase (no `route.ts` under `src/app`).
+
+**Resolution (implemented): direct-to-backend API calls**
+
+This repo now intentionally uses a **direct-to-backend** pattern:
+
+- `NEXT_PUBLIC_API_URL` is treated as the backend API root (default `http://localhost:8000/api`).
+- Frontend requests are made directly to Laravel at `${NEXT_PUBLIC_API_URL}/v1/*`.
+- A shared helper `frontend/src/lib/api/api-fetch.ts` builds the canonical `/api/v1` base and attaches `Authorization: Bearer <token>` from `localStorage`.
+
+This removes any dependency on Next.js route handlers or rewrites for API proxying.
 
 ---
 
@@ -193,17 +211,9 @@ Validated behavior:
 - `authApi` attaches `Authorization: Bearer <token>`.
 - `AuthProvider` calls `checkAuth()` on mount.
 
-**Critical integration mismatch (validated):**
+**Resolution (implemented):** auth calls now go through `apiFetch('/login')`, `apiFetch('/register')`, etc.
 
-- `auth-api.ts` builds:
-  - `API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'`
-- Docker Compose sets `NEXT_PUBLIC_API_URL=http://localhost:8000/api`.
-- Therefore, login/register calls become:
-  - `http://localhost:8000/api/register` and `http://localhost:8000/api/login`
-- But the backend routes are:
-  - `/api/v1/register` and `/api/v1/login`
-
-This means **auth will 404 unless the env var includes `/v1`** or the client code is adjusted.
+Because `apiFetch` always targets `${NEXT_PUBLIC_API_URL}/v1`, the previous `/api` vs `/api/v1` mismatch is eliminated.
 
 ---
 
@@ -218,30 +228,16 @@ This means **auth will 404 unless the env var includes `/v1`** or the client cod
 
 - No Next.js API routes (`src/app/api/**/route.ts`) were found.
 - No Next.js `middleware.ts` was found.
+
+**Resolution (implemented):** direct-to-backend calls mean this absence is not a blocker.
+
 - No Next.js rewrites/proxy rules were found in `frontend/next.config.ts`.
 
 ### 7.3 Consequence
 
-Many frontend calls use relative URLs like `/api/v1/...`.
+Historically, relative calls like `/api/v1/*` would have been a production blocker without a Next.js proxy layer.
 
-Without a Next-side proxy/rewrite, those requests will hit **the Next.js server** at `localhost:3000/api/v1/...` and will likely 404.
-
-Examples (validated):
-
-- `frontend/src/components/payment/payment-method-selector.tsx` calls:
-  - `fetch('/api/v1/payments/methods/paynow/available')`
-- `frontend/src/hooks/use-payment-status.ts` calls:
-  - `fetch(`/api/v1/payments/${paymentId}`)`
-- `frontend/src/lib/graceful-payment-fallback.tsx` calls:
-  - `fetch('/api/v1/orders', ...)`
-
-**To be production-correct, you need one of:**
-
-- A Next.js proxy layer (rewrites or API routes), OR
-- All frontend calls must use absolute backend URLs (via `NEXT_PUBLIC_API_URL`) consistently, OR
-- A reverse proxy (nginx) that routes `/api/*` to the backend.
-
-This repo currently does **not** implement that proxy inside Next.js.
+**Resolution (implemented):** frontend calls are now made directly to Laravel via `apiFetch(...)`, which targets `${NEXT_PUBLIC_API_URL}/v1/*` and attaches a bearer token when present.
 
 ---
 

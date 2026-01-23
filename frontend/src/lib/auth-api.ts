@@ -7,7 +7,7 @@
 
 import type { AuthResponse, LoginCredentials, RegisterData, User } from '@/types/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { apiFetch } from '@/lib/api/api-fetch';
 
 /**
  * Get stored auth token
@@ -55,11 +55,15 @@ export const authApi = {
      * Register a new user
      */
     async register(data: RegisterData): Promise<AuthResponse> {
-        const response = await fetch(`${API_BASE_URL}/register`, {
-            method: 'POST',
-            headers: createHeaders(false),
-            body: JSON.stringify(data),
-        });
+        const response = await apiFetch(
+            '/register',
+            {
+                method: 'POST',
+                headers: createHeaders(false),
+                body: JSON.stringify(data),
+            },
+            { includeAuth: false },
+        );
         return handleResponse<AuthResponse>(response);
     },
 
@@ -67,11 +71,15 @@ export const authApi = {
      * Login user
      */
     async login(credentials: LoginCredentials): Promise<AuthResponse> {
-        const response = await fetch(`${API_BASE_URL}/login`, {
-            method: 'POST',
-            headers: createHeaders(false),
-            body: JSON.stringify(credentials),
-        });
+        const response = await apiFetch(
+            '/login',
+            {
+                method: 'POST',
+                headers: createHeaders(false),
+                body: JSON.stringify(credentials),
+            },
+            { includeAuth: false },
+        );
         return handleResponse<AuthResponse>(response);
     },
 
@@ -79,7 +87,7 @@ export const authApi = {
      * Logout user (revoke token)
      */
     async logout(): Promise<void> {
-        const response = await fetch(`${API_BASE_URL}/logout`, {
+        const response = await apiFetch('/logout', {
             method: 'POST',
             headers: createHeaders(),
         });
@@ -93,7 +101,7 @@ export const authApi = {
      * Get current user
      */
     async me(): Promise<{ user: User }> {
-        const response = await fetch(`${API_BASE_URL}/me`, {
+        const response = await apiFetch('/me', {
             method: 'GET',
             headers: createHeaders(),
         });
@@ -104,7 +112,7 @@ export const authApi = {
      * Refresh auth token
      */
     async refresh(): Promise<{ token: string; token_type: string }> {
-        const response = await fetch(`${API_BASE_URL}/refresh`, {
+        const response = await apiFetch('/refresh', {
             method: 'POST',
             headers: createHeaders(),
         });

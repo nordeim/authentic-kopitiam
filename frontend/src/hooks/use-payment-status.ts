@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { toast } from '@/components/ui/toast-notification';
 import { usePaymentStore, Payment } from '@/store/payment-store';
+import { apiFetch } from '@/lib/api/api-fetch';
 
 interface UsePaymentStatusOptions {
   paymentId: string;
@@ -41,7 +42,7 @@ export function usePaymentStatus({
     
     intervalRef.current = setInterval(async () => {
       try {
-        const response = await fetch(`/api/v1/payments/${paymentId}`);
+        const response = await apiFetch(`/payments/${paymentId}`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch payment status: ${response.status}`);
@@ -125,7 +126,7 @@ export function usePaymentStatus({
 export async function resumePayment(orderId: string, customerEmail: string) {
   try {
     // Look for pending payment by order
-    const response = await fetch(`/api/v1/orders/${orderId}/payments`, {
+    const response = await apiFetch(`/orders/${orderId}/payments`, {
       headers: {
         'X-Customer-Email': customerEmail,
       },

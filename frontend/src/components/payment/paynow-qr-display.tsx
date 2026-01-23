@@ -4,6 +4,7 @@ import * as React from 'react';
 import { ArrowDownTrayIcon, ShareIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { toast } from '@/components/ui/toast-notification';
 import { cn } from '@/lib/utils';
+import { apiFetch } from '@/lib/api/api-fetch';
 
 interface PayNowQRDisplayProps {
   orderId: string;
@@ -68,7 +69,7 @@ export function PayNowQRDisplay({
 
   const handleRefreshQR = async () => {
     try {
-      const response = await fetch(`/api/v1/payments/${orderId}/paynow`, {
+      const response = await apiFetch(`/payments/${orderId}/paynow`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

@@ -4,6 +4,7 @@
  */
 
 import type { Payment } from '@/store/payment-store';
+import { apiFetch } from '@/lib/api/api-fetch';
 
 export interface CreatePaymentResponse {
   payment_id: string;
@@ -13,21 +14,16 @@ export interface CreatePaymentResponse {
 }
 
 export class PaymentApiClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || '') {
-    this.baseUrl = baseUrl;
-  }
+  constructor() {}
 
   // Create PayNow payment
   async createPayNowPayment(orderId: string): Promise<CreatePaymentResponse> {
-    const response = await fetch(`${this.baseUrl}/api/v1/payments/${orderId}/paynow`, {
+    const response = await apiFetch(`/payments/${orderId}/paynow`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Idempotency-Key': this.generateIdempotencyKey(orderId, 'paynow'),
       },
-      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -40,14 +36,13 @@ export class PaymentApiClient {
 
   // Create Stripe payment intent
   async createStripePayment(orderId: string, amount: number): Promise<CreatePaymentResponse> {
-    const response = await fetch(`${this.baseUrl}/api/v1/payments/${orderId}/stripe`, {
+    const response = await apiFetch(`/payments/${orderId}/stripe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Idempotency-Key': this.generateIdempotencyKey(orderId, 'stripe'),
       },
       body: JSON.stringify({ amount }),
-      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -60,9 +55,7 @@ export class PaymentApiClient {
 
   // Get payment status
   async getPaymentStatus(paymentId: string): Promise<Payment> {
-    const response = await fetch(`${this.baseUrl}/api/v1/payments/${paymentId}`, {
-      credentials: 'include',
-    });
+    const response = await apiFetch(`/payments/${paymentId}`);
 
     if (!response.ok) {
       const error = await response.json();
@@ -74,9 +67,7 @@ export class PaymentApiClient {
 
   // Get payment by order ID
   async getPaymentsByOrder(orderId: string): Promise<Payment[]> {
-    const response = await fetch(`${this.baseUrl}/api/v1/payments?order_id=${orderId}`, {
-      credentials: 'include',
-    });
+    const response = await apiFetch(`/payments?order_id=${encodeURIComponent(orderId)}`);
 
     if (!response.ok) {
       const error = await response.json();
@@ -88,13 +79,12 @@ export class PaymentApiClient {
 
   // Process refund
   async processRefund(paymentId: string, amount: number, reason: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/api/v1/payments/${paymentId}/refund`, {
+    const response = await apiFetch(`/payments/${paymentId}/refund`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ amount, reason }),
-      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -110,8 +100,8 @@ export class PaymentApiClient {
   }> {
     try {
       const [paynowRes, stripeRes] = await Promise.all([
-        fetch(`${this.baseUrl}/api/v1/payments/methods/paynow/available`),
-        fetch(`${this.baseUrl}/api/v1/payments/methods/stripe/available`),
+        apiFetch('/payments/methods/paynow/available', undefined, { includeAuth: false }),
+        apiFetch('/payments/methods/stripe/available', undefined, { includeAuth: false }),
       ]);
 
       return {

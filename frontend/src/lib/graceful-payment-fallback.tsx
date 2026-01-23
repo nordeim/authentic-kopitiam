@@ -13,6 +13,7 @@ import {
   RetroDialogDescription,
 } from '@/components/ui/retro-dialog';
 import { RetroButton } from '@/components/ui/retro-button';
+import { apiFetch } from '@/lib/api/api-fetch';
 
 export interface FallbackOptions {
   onRetry: () => void;
@@ -237,10 +238,9 @@ export async function checkPaymentServicesHealth(): Promise<{
   allAvailable: boolean;
 }> {
   try {
-    const response = await fetch('/api/v1/payments/health', {
+    const response = await apiFetch('/payments/health', {
       cache: 'no-cache',
-      credentials: 'include',
-    });
+    }, { includeAuth: false });
 
     if (!response.ok) {
       return {
@@ -276,15 +276,14 @@ export async function createOfflineOrder(orderData: any): Promise<{ orderId: str
   };
 
   try {
-    const response = await fetch('/api/v1/orders', {
+    const response = await apiFetch('/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Offline-Mode': 'true',
       },
       body: JSON.stringify(offlineOrderData),
-      credentials: 'include',
-    });
+    }, { includeAuth: false });
 
     if (!response.ok) {
       throw new Error('Failed to create offline order');

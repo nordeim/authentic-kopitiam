@@ -9,6 +9,7 @@ import { usePaymentStore } from '@/store/payment-store';
 import { useCartStore } from '@/store/cart-store';
 import { toast } from '@/components/ui/toast-notification';
 import { LoaderIcon } from '@/components/ui/loader-icon';
+import { apiFetch } from '@/lib/api/api-fetch';
 
 // Icons
 import { ReceiptPercentIcon, MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
@@ -35,12 +36,11 @@ function OrderConfirmationContent() {
       }
 
       try {
-        const response = await fetch(`/api/v1/orders/${orderId}`, {
+        const response = await apiFetch(`/orders/${orderId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
         });
 
         if (!response.ok) {
