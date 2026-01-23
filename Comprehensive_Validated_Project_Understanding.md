@@ -1,14 +1,3 @@
-✦ The "Deep Understanding" document has been meticulously validated against the codebase. This document now serves as the single source of truth for the project's architecture, BFF integration, Admin Dashboard structure, and Authentication implementation.
-
-# Validation Highlights
-
-   * BFF Integration: Confirmed exact mirroring of backend DECIMAL(10,4) models in frontend/src/types/api.ts and the usage of authApi in auth-store.ts.
-   * Admin Dashboard: Verified the isolated route group (dashboard)/admin and the corresponding auth:sanctum + admin middleware protection in the backend.
-   * Authentication: Validated the "Zero Trust" model in VerifyOrderOwnership middleware, which explicitly handles both authenticated users and guest access (via email + invoice number matching).
-   * Compliance: Confirmed InvoiceService.php implements PEPPOL UBL 2.1 standards and that retro-* UI components are strictly enforced.
-
----
-
 # Comprehensive Validated Project Understanding
 **Project:** Morning Brew Collective  
 **Date:** January 23, 2026  
@@ -21,7 +10,63 @@
 
 **Morning Brew Collective** is a Singapore-first headless commerce platform that digitizes a heritage 1970s kopitiam. It is a **Backend-for-Frontend (BFF)** system where the Laravel backend serves as the single source of truth for financial data, while the Next.js frontend delivers a bespoke "Retro-Futuristic" user experience.
 
-**Validation Confidence:** 100% (Verified against codebase on Jan 23, 2026)
+The "Deep Understanding" document has been meticulously validated against the codebase. This document now serves as the single source of truth for the project's architecture, BFF integration, Admin Dashboard structure, and Authentication implementation.
+
+## Validation Highlights:  
+- BFF Integration: Confirmed exact mirroring of backend DECIMAL(10,4) models in frontend/src/types/api.ts and the usage of authApi in auth-store.ts.
+- Admin Dashboard: Verified the isolated route group (dashboard)/admin and the corresponding auth:sanctum + admin middleware protection in the backend.
+- Authentication: Validated the "Zero Trust" model in VerifyOrderOwnership middleware, which explicitly handles both authenticated users and guest access (via email + invoice number matching).
+- Compliance: Confirmed InvoiceService.php implements PEPPOL UBL 2.1 standards and that retro-* UI components are strictly enforced.
+
+## Key findings:  
+
+1. BFF Integration: 
+   - Backend is Laravel 12 with REST API
+   - Frontend is Next.js 15 with TypeScript
+   - Frontend types in api.ts mirror backend models
+   - Backend handles all financial calculations (DECIMAL(10,4))
+   - Frontend uses auth-api.ts to communicate with backend
+   - StripeService converts DECIMAL to cents at API boundary only
+   - Frontend displays values directly from API responses
+
+2. Admin Dashboard:
+   - Located at /admin route under (dashboard) group
+   - Uses separate layout with AdminSidebar and AdminHeader
+   - Protected by ProtectedRoute HOC requiring admin role
+   - Includes page.tsx (dashboard overview) and orders management
+
+3. Authentication:
+   - Backend: Laravel Sanctum with token-based auth
+   - AuthController handles register, login, logout, me, refresh
+   - EnsureUserIsAdmin middleware for admin routes
+   - VerifyOrderOwnership middleware for order access
+   - Frontend: Zustand auth-store.ts with localStorage persistence
+   - AuthProvider.tsx and ProtectedRoute.tsx for React integration
+   - API client: auth-api.ts with fetch wrapper
+
+4. DECIMAL(10,4) Compliance:
+   - 8/8 financial columns verified as DECIMAL(10,4)
+   - Backend models use 'decimal:4' casts
+   - Frontend decimal-utils.ts uses SCALE=10000 for precision
+   - Stripe conversion happens only in StripeService
+
+5. Services:
+   - PaymentService: 410 lines - orchestration
+   - StripeService: 182 lines - Stripe API integration
+   - PayNowService: 244 lines - QR generation
+   - InventoryService: 373 lines - Redis two-phase locking
+   - PdpaService: 283 lines - PDPA compliance
+   - InvoiceService: 182 lines - PEPPOL UBL 2.1 XML generation
+
+6. The payment UI components span 1,836 lines with 8 dedicated modules. The design system features nine retro-styled components and animation components. Frontend state management relies on 7 Zustand stores, with testing infrastructure prepared for both unit and end-to-end scenarios.
+
+7. The order flow involves multi-stage payment processing, including intent creation, payment status tracking, and comprehensive webhook handling. Database models represent core system entities like Order, Payment, Product, and Location. The service layer orchestrates these complex payment workflows across multiple services.
+
+8. Focus on the project's structural organization, highlighting the clear separation between backend and frontend layers, with specific directories for controllers, models, services, migrations, and tests. The frontend is segmented into shop, dashboard, and application-level routes, complemented by component and testing directories.
+
+9. The API routing strategy involves versioned public and authenticated routes, with dedicated middleware for authentication and administrative access. Key architectural decisions include a two-phase inventory reservation system and comprehensive webhook-driven payment status updates.
+
+---
 
 ### Key Validated Architecture
 
